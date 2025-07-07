@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, DragEvent } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
   Save, 
@@ -84,6 +84,8 @@ const Editor: React.FC = () => {
   const [htmlContent, setHtmlContent] = useState('');
   const [cssContent, setCssContent] = useState('');
   const [templateBlocks, setTemplateBlocks] = useState<Array<{id: string, type: string, content: string, position: number}>>([]);
+  const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
+  const [draggedOverBlockId, setDraggedOverBlockId] = useState<string | null>(null);
 
   // Element properties state
   const [elementText, setElementText] = useState('');
@@ -835,6 +837,16 @@ const Editor: React.FC = () => {
                 outline-offset: 2px;
                 background: rgba(59, 130, 246, 0.1);
               }
+              /* Style dla drag & drop */
+              .dragging {
+                opacity: 0.6;
+                transform: scale(0.98);
+                box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+              }
+              .drag-over {
+                border: 2px dashed #3b82f6;
+                background-color: rgba(59, 130, 246, 0.1);
+              }
             </style>
           </head>
           <body>
@@ -1002,6 +1014,113 @@ const Editor: React.FC = () => {
     setShowMoreMenu(false);
   };
 
+  // Funkcje obsługujące zdarzenia drag & drop
+  const handleDragStart = (e: DragEvent<HTMLDivElement>, blockId: string, blockContent: string, isFromLibrary: boolean = false) => {
+    e.dataTransfer.setData('blockId', blockId);
+    e.dataTransfer.setData('blockContent', blockContent);
+    e.dataTransfer.setData('isFromLibrary', isFromLibrary.toString());
+    setDraggedBlockId(blockId);
+    
+    // Dodaj efekt wizualny dla przeciąganego elementu
+    if (e.currentTarget.classList) {
+      e.currentTarget.classList.add('dragging');
+    }
+    
+    // Ustaw efekt wizualny dla kursora
+    e.dataTransfer.effectAllowed = 'move';
+    
+    // Opcjonalnie możemy ustawić obraz podczas przeciągania
+    // const dragImage = document.createElement('div');
+    // dragImage.textContent = 'Blok: ' + blockId;
+    // dragImage.style.cssText = 'padding: 10px; background: #3b82f6; color: white; border-radius: 4px; position: absolute; top: -1000px;';
+    // document.body.appendChild(dragImage);
+    // e.dataTransfer.setDragImage(dragImage, 0, 0);
+    // setTimeout(() => document.body.removeChild(dragImage), 0);
+  };
+
+  const handleDragOver = (e: DragEvent<HTMLDivElement>, blockId?: string) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    
+    if (blockId) {
+      setDraggedOverBlockId(blockId);
+      
+      // Dodaj klasę dla elementu nad którym przeciągamy
+      const element = e.currentTarget as HTMLElement;
+      if (element && !element.classList.contains('drag-over')) {
+        element.classList.add('drag-over');
+      }
+    }
+  };
+
+  const handleDragLeave = (e: DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setDraggedOverBlockId(null);
+    
+    // Usuń klasę dla elementu z którego wychodzimy
+    const element = e.currentTarget as HTMLElement;
+    if (element && element.classList.contains('drag-over')) {
+      element.classList.remove('drag-over');
+    }
+  };
+
+  const handleDrop = (e: DragEvent<HTMLDivElement>, targetIndex?: number) => {
+    e.preventDefault();
+    const blockId = e.dataTransfer.getData('blockId');
+    const blockContent = e.dataTransfer.getData('blockContent');
+    const isFromLibrary = e.dataTransfer.getData('isFromLibrary') === 'true';
+    
+    // Usuń efekt wizualny
+    setDraggedBlockId(null);
+    setDraggedOverBlockId(null);
+    
+    // Usuń klasę dla elementu na który upuszczamy
+    const element = e.currentTarget as HTMLElement;
+    if (element && element.classList.contains('drag-over')) {
+      element.classList.remove('drag-over');
+    }
+    
+    if (isFromLibrary) {
+      // Dodaj nowy blok z biblioteki
+      addBlock(blockId, blockContent);
+    } else if (targetIndex !== undefined) {
+      // Przenieś istniejący blok
+      const sourceIndex = templateBlocks.findIndex(block => block.id === blockId);
+      if (sourceIndex !== -1 && sourceIndex !== targetIndex) {
+        const newBlocks = [...templateBlocks];
+        const [movedBlock] = newBlocks.splice(sourceIndex, 1);
+        newBlocks.splice(targetIndex, 0, movedBlock);
+        
+        // Aktualizuj pozycje
+        const updatedBlocks = newBlocks.map((block, index) => ({
+          ...block,
+          position: index
+        }));
+        
+        setTemplateBlocks(updatedBlocks);
+        
+        // Aktualizuj HTML
+        const reorderedHtml = updatedBlocks.map(block => block.content).join('\n');
+        setHtmlContent(reorderedHtml);
+      }
+    }
+  };
+
+  const handleDragEnd = (e: DragEvent<HTMLDivElement>) => {
+    // Usuń efekt wizualny
+    if (e.currentTarget.classList) {
+      e.currentTarget.classList.remove('dragging');
+    }
+    
+    // Usuń wszystkie pozostałe efekty wizualne
+    document.querySelectorAll('.drag-over').forEach(el => {
+      el.classList.remove('drag-over');
+    });
+    
+    setDraggedBlockId(null);
+    setDraggedOverBlockId(null);
+  };
+
   const addBlock = (blockId: string, blockContent: string) => {
     const newBlock = {
       id: `${blockId}-${Date.now()}`,
@@ -1020,6 +1139,7 @@ const Editor: React.FC = () => {
     }
   };
 
+  // Funkcja do przenoszenia bloków (stara metoda - przyciski)
   const moveBlock = (index: number, direction: 'up' | 'down') => {
     const newBlocks = [...templateBlocks];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
@@ -1149,26 +1269,33 @@ const Editor: React.FC = () => {
     <div className="w-72 bg-slate-800 border-r border-slate-700 overflow-y-auto">
       <div className="p-4 border-b border-slate-700">
         <h3 className="text-white font-semibold">Bloki szablonu</h3>
-        <p className="text-slate-400 text-sm">Kliknij aby dodać blok</p>
+        <p className="text-slate-400 text-sm">Przeciągnij lub kliknij aby dodać blok</p>
       </div>
       
-      <div className="p-4 space-y-6">
+      <div 
+        className="p-4 space-y-6"
+        onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e)}
+        onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e)}
+      >
         {Object.entries(blockCategories).map(([category, blocks]) => (
           <div key={category}>
             <h4 className="text-blue-400 font-medium mb-3 text-sm">{category}</h4>
             <div className="space-y-2">
               {blocks.map((block) => (
-                <button
+                <div
                   key={block.id}
+                  draggable
+                  onDragStart={(e: DragEvent<HTMLDivElement>) => handleDragStart(e, block.id, block.content, true)}
+                  onDragEnd={(e: DragEvent<HTMLDivElement>) => handleDragEnd(e)}
+                  className="w-full flex items-center gap-3 p-3 bg-slate-900 hover:bg-slate-700 rounded-lg transition-colors text-left cursor-grab active:cursor-grabbing"
                   onClick={() => addBlock(block.id, block.content)}
-                  className="w-full flex items-center gap-3 p-3 bg-slate-900 hover:bg-slate-700 rounded-lg transition-colors text-left"
                 >
                   <block.icon className="w-4 h-4 text-blue-400" />
                   <div>
                     <p className="text-white text-sm font-medium">{block.name}</p>
                     <p className="text-slate-400 text-xs">{category.split(' - ')[0]}</p>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </div>
@@ -1181,7 +1308,7 @@ const Editor: React.FC = () => {
     <div className="w-64 bg-slate-800 border-r border-slate-700 overflow-y-auto">
       <div className="p-4 border-b border-slate-700">
         <h3 className="text-white font-semibold">Kolejność bloków</h3>
-        <p className="text-slate-400 text-sm">Zarządzaj układem</p>
+        <p className="text-slate-400 text-sm">Przeciągnij aby zmienić kolejność</p>
       </div>
       
       <div className="p-4">
@@ -1190,7 +1317,16 @@ const Editor: React.FC = () => {
         ) : (
           <div className="space-y-2">
             {templateBlocks.map((block, index) => (
-              <div key={block.id} className="flex items-center gap-2 p-2 bg-slate-900 rounded-lg">
+              <div 
+                key={block.id} 
+                className={`flex items-center gap-2 p-2 bg-slate-900 rounded-lg cursor-grab active:cursor-grabbing ${draggedBlockId === block.id ? 'opacity-50 border border-blue-500' : ''} ${draggedOverBlockId === block.id ? 'border border-dashed border-blue-400 bg-slate-800' : ''}`}
+                draggable
+                onDragStart={(e: DragEvent<HTMLDivElement>) => handleDragStart(e, block.id, block.content)}
+                onDragOver={(e: DragEvent<HTMLDivElement>) => handleDragOver(e, block.id)}
+                onDragLeave={handleDragLeave}
+                onDrop={(e: DragEvent<HTMLDivElement>) => handleDrop(e, index)}
+                onDragEnd={handleDragEnd}
+              >
                 <span className="text-slate-400 text-sm w-6">{index + 1}.</span>
                 <span className="text-white text-sm flex-1 truncate">{block.type}</span>
                 <div className="flex gap-1">
