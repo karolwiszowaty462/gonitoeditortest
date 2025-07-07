@@ -1,0 +1,118 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Theme variables */
+:root {
+  --bg-primary: #1e293b;
+  --bg-secondary: #0f172a;
+  --bg-tertiary: #334155;
+  --text-primary: #f8fafc;
+  --text-secondary: #cbd5e1;
+  --border-color: #475569;
+}
+
+.light-theme {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --text-primary: #1e293b;
+  --text-secondary: #475569;
+  --border-color: #e2e8f0;
+}
+
+/* Apply theme variables to elements */
+.bg-slate-800 {
+  background-color: var(--bg-primary) !important;
+}
+
+.bg-slate-900 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.bg-slate-700 {
+  background-color: var(--bg-tertiary) !important;
+}
+
+.text-white {
+  color: var(--text-primary) !important;
+}
+
+.text-slate-300,
+.text-slate-400 {
+  color: var(--text-secondary) !important;
+}
+
+.border-slate-700,
+.border-slate-600 {
+  border-color: var(--border-color) !important;
+}
+
+/* Smooth transitions for theme changes */
+* {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Light theme specific overrides */
+.light-theme .bg-slate-800 {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light-theme .bg-slate-900 {
+  background-color: #f8fafc !important;
+}
+
+.light-theme .bg-slate-700 {
+  background-color: #f1f5f9 !important;
+}
+
+.light-theme .text-white {
+  color: #1e293b !important;
+}
+
+.light-theme .text-slate-300,
+.light-theme .text-slate-400 {
+  color: #475569 !important;
+}
+
+.light-theme .border-slate-700,
+.light-theme .border-slate-600 {
+  border-color: #e2e8f0 !important;
+}
+
+/* Button hover states for light theme */
+.light-theme .hover\:bg-slate-700:hover {
+  background-color: #e2e8f0 !important;
+}
+
+.light-theme .hover\:bg-slate-800:hover {
+  background-color: #f1f5f9 !important;
+}
+
+/* Input focus states for light theme */
+.light-theme .focus\:border-blue-500:focus {
+  border-color: #3b82f6 !important;
+}
+
+/* Notification styles */
+.notification-enter {
+  opacity: 0;
+  transform: translateY(-20px);
+}
+
+.notification-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.notification-exit {
+  opacity: 1;
+}
+
+.notification-exit-active {
+  opacity: 0;
+  transform: translateY(-20px);
+  transition: opacity 300ms, transform 300ms;
+}
