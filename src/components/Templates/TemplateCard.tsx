@@ -46,7 +46,7 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
       const rect = buttonRef.current.getBoundingClientRect();
       setMenuPosition({
         top: rect.bottom + window.scrollY + 8,
-        left: rect.right + window.scrollX - 192 // 192px = w-48
+        left: rect.right + window.scrollX - 192
       });
     }
     
@@ -61,9 +61,8 @@ const TemplateCard: React.FC<TemplateCardProps> = ({
     setShowMenu(false);
   };
 
-  // Close menu when clicking outside
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
+    const handleClickOutside = () => {
       if (showMenu) {
         setShowMenu(false);
       }

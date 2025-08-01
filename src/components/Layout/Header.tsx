@@ -47,7 +47,6 @@ const Header: React.FC<HeaderProps> = ({
   const handleNotificationClick = () => {
     setShowNotifications(!showNotifications);
     
-    // Test notification if enabled
     if (settings.pushNotifications) {
       showNotification('Test powiadomienia', 'Powiadomienia działają poprawnie!');
     }

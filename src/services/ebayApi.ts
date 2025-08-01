@@ -288,153 +288,278 @@ class EbayApiService {
     return this.tokens.accessToken;
   }
 
-  // Get user's active listings - symulacja dla demonstracji
+  // Get user's active listings - rzeczywista implementacja
   async getMyActiveListings(limit: number = 100, offset: number = 0): Promise<{
     listings: EbayListing[];
     total: number;
     hasMore: boolean;
   }> {
-    // Dla demonstracji zwracamy przykładowe dane
-    // W rzeczywistej implementacji tutaj byłoby wywołanie do eBay API
-    
-    const mockListings: EbayListing[] = [
-      {
-        itemId: '123456789',
-        title: 'iPhone 14 Pro Max 256GB Space Black - Nowy',
-        price: { value: '4299.00', currency: 'PLN' },
-        condition: 'New',
-        categoryId: '9355',
-        listingType: 'FixedPrice',
-        quantity: 1,
-        format: 'FixedPrice',
-        marketplaceId: 'EBAY_PL',
-        seller: {
-          username: 'testuser',
-          feedbackPercentage: 99.5,
-          feedbackScore: 1250
-        },
-        itemLocation: {
-          country: 'PL',
-          postalCode: '00-001'
-        },
-        shippingOptions: [],
-        images: ['https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg'],
-        description: 'Nowy iPhone 14 Pro Max w kolorze Space Black',
-        itemSpecifics: [],
-        startTime: new Date().toISOString(),
-        endTime: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        viewItemURL: 'https://www.ebay.pl/itm/123456789',
-        galleryURL: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg',
-        paymentMethods: ['PayPal'],
-        returnPolicy: {
-          returnsAccepted: true,
-          refund: 'MoneyBack',
-          returnsWithin: 'Days_30'
-        },
-        sellingState: 'Active',
-        timeLeft: 'P7D'
-      },
-      {
-        itemId: '987654321',
-        title: 'Samsung Galaxy S23 Ultra 512GB Phantom Black',
-        price: { value: '3899.00', currency: 'PLN' },
-        condition: 'New',
-        categoryId: '9355',
-        listingType: 'FixedPrice',
-        quantity: 2,
-        format: 'FixedPrice',
-        marketplaceId: 'EBAY_PL',
-        seller: {
-          username: 'testuser',
-          feedbackPercentage: 99.5,
-          feedbackScore: 1250
-        },
-        itemLocation: {
-          country: 'PL',
-          postalCode: '00-001'
-        },
-        shippingOptions: [],
-        images: ['https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg'],
-        description: 'Nowy Samsung Galaxy S23 Ultra',
-        itemSpecifics: [],
-        startTime: new Date().toISOString(),
-        endTime: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(),
-        viewItemURL: 'https://www.ebay.pl/itm/987654321',
-        galleryURL: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg',
-        paymentMethods: ['PayPal'],
-        returnPolicy: {
-          returnsAccepted: true,
-          refund: 'MoneyBack',
-          returnsWithin: 'Days_30'
-        },
-        sellingState: 'Active',
-        timeLeft: 'P5D'
+    try {
+      const accessToken = await this.getValidAccessToken();
+      
+      // Używamy eBay Inventory API do pobrania aktywnych aukcji
+      const url = `${this.endpoints[this.config.environment].inventory}/offer?limit=${limit}&offset=${offset}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`eBay API error: ${error.errors?.[0]?.message || 'Unknown error'}`);
       }
-    ];
 
-    // Symulacja opóźnienia API
-    await new Promise(resolve => setTimeout(resolve, 1000));
+      const data = await response.json();
+      
+      // Pobieramy szczegóły każdej aukcji
+      const listings: EbayListing[] = [];
+      
+      for (const offer of data.offers || []) {
+        // Pobieramy szczegóły aukcji z eBay Browse API
+        const listingDetails = await this.getListingDetails(offer.listingId);
+        listings.push(listingDetails);
+      }
 
-    return {
-      listings: mockListings,
-      total: mockListings.length,
-      hasMore: false
-    };
+      return {
+        listings,
+        total: data.total || listings.length,
+        hasMore: (offset + listings.length) < (data.total || 0)
+      };
+    } catch (error) {
+      console.error('Error fetching listings:', error);
+      throw error;
+    }
   }
+  
+  // Pobierz szczegóły aukcji
+  async getListingDetails(itemId: string): Promise<EbayListing> {
+    try {
+      const accessToken = await this.getValidAccessToken();
+      
+      const url = `${this.endpoints[this.config.environment].browse}/item/${itemId}`;
+      
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        }
+      });
 
-  // Update single listing - symulacja
-  async updateListing(updateRequest: EbayUpdateRequest): Promise<boolean> {
-    console.log('Updating listing:', updateRequest.itemId);
-    console.log('Updates:', updateRequest);
-    
-    // Symulacja opóźnienia API
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    // Symulacja 90% sukcesu
-    if (Math.random() > 0.1) {
-      return true;
-    } else {
-      throw new Error('Simulated API error');
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`eBay API error: ${error.errors?.[0]?.message || 'Unknown error'}`);
+      }
+
+      const item = await response.json();
+      
+      // Mapowanie odpowiedzi API do naszego modelu EbayListing
+      return {
+        itemId: item.itemId,
+        title: item.title,
+        price: {
+          value: item.price?.value?.toString() || '0',
+          currency: item.price?.currency || 'USD'
+        },
+        condition: item.condition,
+        categoryId: item.categoryId,
+        listingType: item.listingType || 'FixedPrice',
+        quantity: item.quantity || 1,
+        format: item.format || 'FixedPrice',
+        marketplaceId: item.marketplaceId,
+        seller: {
+          username: item.seller?.username || '',
+          feedbackPercentage: item.seller?.feedbackPercentage || 0,
+          feedbackScore: item.seller?.feedbackScore || 0
+        },
+        itemLocation: {
+          country: item.itemLocation?.country || '',
+          postalCode: item.itemLocation?.postalCode || ''
+        },
+        shippingOptions: (item.shippingOptions || []).map((option: any) => ({
+          shippingServiceCode: option.shippingServiceCode,
+          shippingCost: {
+            value: option.shippingCost?.value?.toString() || '0',
+            currency: option.shippingCost?.currency || 'USD'
+          }
+        })),
+        images: item.images?.map((img: any) => img.imageUrl) || [],
+        description: item.description || '',
+        itemSpecifics: (item.itemSpecifics || []).map((spec: any) => ({
+          name: spec.name,
+          value: Array.isArray(spec.value) ? spec.value : [spec.value]
+        })),
+        startTime: item.startTime || new Date().toISOString(),
+        endTime: item.endTime || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        viewItemURL: item.itemWebUrl || '',
+        galleryURL: item.images?.[0]?.imageUrl || '',
+        paymentMethods: item.paymentMethods || [],
+        returnPolicy: {
+          returnsAccepted: item.returnTerms?.returnsAccepted || false,
+          refund: item.returnTerms?.refundMethod || '',
+          returnsWithin: item.returnTerms?.returnPeriod || ''
+        },
+        sellingState: item.sellingState || 'Active',
+        timeLeft: item.timeLeft || ''
+      };
+    } catch (error) {
+      console.error(`Error fetching listing details for ${itemId}:`, error);
+      throw error;
     }
   }
 
-  // Bulk update multiple listings
-  async bulkUpdateListings(bulkRequest: EbayBulkUpdateRequest, onProgress?: (completed: number, total: number) => void): Promise<{
+  // Update single listing - rzeczywista implementacja
+  async updateListing(updateRequest: EbayUpdateRequest): Promise<boolean> {
+    try {
+      console.log('Updating listing:', updateRequest.itemId);
+      
+      const accessToken = await this.getValidAccessToken();
+      
+      // Przygotowujemy dane do aktualizacji
+      const updateData: any = {};
+      
+      // Aktualizacja opisu
+      if (updateRequest.description !== undefined) {
+        updateData.product = {
+          ...updateData.product,
+          description: updateRequest.description
+        };
+      }
+      
+      // Aktualizacja tytułu
+      if (updateRequest.title !== undefined) {
+        updateData.product = {
+          ...updateData.product,
+          title: updateRequest.title
+        };
+      }
+      
+      // Aktualizacja ceny
+      if (updateRequest.price !== undefined) {
+        updateData.pricingSummary = {
+          price: {
+            value: updateRequest.price.value,
+            currency: updateRequest.price.currency
+          }
+        };
+      }
+      
+      // Aktualizacja ilości
+      if (updateRequest.quantity !== undefined) {
+        updateData.availableQuantity = updateRequest.quantity;
+      }
+      
+      // Aktualizacja zdjęć
+      if (updateRequest.images !== undefined && updateRequest.images.length > 0) {
+        updateData.product = {
+          ...updateData.product,
+          imageUrls: updateRequest.images
+        };
+      }
+      
+      // Aktualizacja specyfikacji przedmiotu
+      if (updateRequest.itemSpecifics !== undefined) {
+        updateData.product = {
+          ...updateData.product,
+          aspects: updateRequest.itemSpecifics.reduce((acc: any, spec) => {
+            acc[spec.name] = spec.value;
+            return acc;
+          }, {})
+        };
+      }
+      
+      // Wysyłamy żądanie aktualizacji do eBay API
+      const url = `${this.endpoints[this.config.environment].inventory}/offer/${updateRequest.itemId}`;
+      
+      const response = await fetch(url, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(updateData)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(`eBay API error: ${error.errors?.[0]?.message || 'Unknown error'}`);
+      }
+      
+      return true;
+    } catch (error) {
+      console.error(`Error updating listing ${updateRequest.itemId}:`, error);
+      throw error;
+    }
+  }
+
+  // Bulk update multiple listings - rzeczywista implementacja
+  async bulkUpdateListings(bulkUpdateRequest: EbayBulkUpdateRequest): Promise<{
     successful: string[];
     failed: Array<{ itemId: string; error: string }>;
   }> {
+    console.log('Bulk updating listings:', bulkUpdateRequest.itemIds.length, 'items');
+    
     const results = {
       successful: [] as string[],
       failed: [] as Array<{ itemId: string; error: string }>
     };
-
-    for (let i = 0; i < bulkRequest.itemIds.length; i++) {
-      const itemId = bulkRequest.itemIds[i];
-      
+    
+    // Przetwarzamy każdą aukcję pojedynczo
+    for (const itemId of bulkUpdateRequest.itemIds) {
       try {
+        // Przygotowujemy dane do aktualizacji dla pojedynczej aukcji
         const updateRequest: EbayUpdateRequest = {
-          itemId,
-          description: bulkRequest.updates.description
+          itemId: itemId
         };
-
+        
+        // Dodajemy opis jeśli jest dostępny
+        if (bulkUpdateRequest.updates.description !== undefined) {
+          updateRequest.description = bulkUpdateRequest.updates.description;
+        }
+        
+        // Dodajemy szablon HTML jeśli jest dostępny
+        if (bulkUpdateRequest.updates.templateHtml !== undefined) {
+          updateRequest.description = bulkUpdateRequest.updates.templateHtml;
+        }
+        
+        // Aktualizujemy cenę jeśli jest dostępna
+        if (bulkUpdateRequest.updates.priceAdjustment !== undefined) {
+          // Najpierw pobieramy aktualną cenę
+          const currentItem = await this.getListingDetails(itemId);
+          const currentPrice = parseFloat(currentItem.price.value);
+          
+          // Obliczamy nową cenę
+          let newPrice = currentPrice;
+          if (bulkUpdateRequest.updates.priceAdjustment.type === 'percentage') {
+            newPrice = currentPrice * (1 + bulkUpdateRequest.updates.priceAdjustment.value / 100);
+          } else {
+            newPrice = currentPrice + bulkUpdateRequest.updates.priceAdjustment.value;
+          }
+          
+          // Zaokrąglamy do dwóch miejsc po przecinku
+          newPrice = Math.round(newPrice * 100) / 100;
+          
+          updateRequest.price = {
+            value: newPrice.toString(),
+            currency: currentItem.price.currency
+          };
+        }
+        
+        // Aktualizujemy aukcję
         await this.updateListing(updateRequest);
         results.successful.push(itemId);
       } catch (error) {
-        results.failed.push({
-          itemId,
-          error: error instanceof Error ? error.message : 'Unknown error'
+        results.failed.push({ 
+          itemId, 
+          error: error instanceof Error ? error.message : 'Unknown error' 
         });
       }
-
-      // Report progress
-      if (onProgress) {
-        onProgress(i + 1, bulkRequest.itemIds.length);
-      }
-
-      // Add small delay to avoid rate limiting
-      await new Promise(resolve => setTimeout(resolve, 100));
     }
-
+    
     return results;
   }
 
@@ -471,27 +596,19 @@ class EbayApiService {
       ${templateHtml}
     `;
 
-    return this.bulkUpdateListings({
+    const results = await this.bulkUpdateListings({
       itemIds,
       updates: {
-        description: fullDescription,
         templateHtml: fullDescription
       }
-    }, onProgress);
-  }
+    });
 
-  // Get listing details - symulacja
-  async getListingDetails(itemId: string): Promise<EbayListing | null> {
-    // Symulacja opóźnienia
-    await new Promise(resolve => setTimeout(resolve, 300));
-    
-    // Zwróć null dla demonstracji
-    return null;
-  }
+    // Report progress if callback provided
+    if (onProgress) {
+      onProgress(results.successful.length + results.failed.length, itemIds.length);
+    }
 
-  // Check if user is authenticated
-  isAuthenticated(): boolean {
-    return this.tokens !== null && Date.now() < this.tokens.expiresAt;
+    return results;
   }
 
   // Disconnect (clear tokens)
@@ -501,27 +618,39 @@ class EbayApiService {
     localStorage.removeItem('ebay_oauth_state');
   }
 
-  // Private helper methods
-  private generateState(): string {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+  private loadTokensFromStorage() {
+    const tokensJson = localStorage.getItem('ebay_tokens');
+    if (tokensJson) {
+      try {
+        this.tokens = JSON.parse(tokensJson);
+        
+        // Sprawdź czy tokeny nie wygasły
+        if (this.tokens && this.tokens.expiresAt <= Date.now()) {
+          console.log('Stored tokens expired, will need to refresh');
+        }
+      } catch (error) {
+        console.error('Error parsing stored tokens:', error);
+        localStorage.removeItem('ebay_tokens');
+      }
+    }
   }
-
-  private saveTokensToStorage(): void {
+  
+  private saveTokensToStorage() {
     if (this.tokens) {
       localStorage.setItem('ebay_tokens', JSON.stringify(this.tokens));
     }
   }
+  
+  // Sprawdź czy użytkownik jest zalogowany
+  isAuthenticated(): boolean {
+    return !!this.tokens && this.tokens.expiresAt > Date.now();
+  }
 
-  private loadTokensFromStorage(): void {
-    const stored = localStorage.getItem('ebay_tokens');
-    if (stored) {
-      try {
-        this.tokens = JSON.parse(stored);
-      } catch (error) {
-        console.error('Error loading tokens from storage:', error);
-        localStorage.removeItem('ebay_tokens');
-      }
-    }
+  private generateState(): string {
+    // Generuj bezpieczny losowy string jako state dla ochrony przed CSRF
+    const array = new Uint32Array(8);
+    window.crypto.getRandomValues(array);
+    return Array.from(array, x => x.toString(16).padStart(8, '0')).join('');
   }
 }
 

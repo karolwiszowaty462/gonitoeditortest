@@ -19,6 +19,7 @@ interface TemplateState {
   currentTemplate: Template | null;
   activeTemplate: Template | null;
   initializeTemplates: () => void;
+  resetTemplates: () => void;
   createTemplate: (template: Omit<Template, 'id' | 'createdAt' | 'updatedAt'>) => void;
   updateTemplate: (id: string, updates: Partial<Template>) => void;
   deleteTemplate: (id: string) => void;
@@ -35,11 +36,11 @@ const defaultTemplates: Template[] = [
     description: 'Prosty i elegancki szablon dla wszystkich kategorii produktów',
     category: 'inne',
     thumbnail: 'https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400',
-    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]'],
+    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]'],
     htmlContent: `
       <div class="ebay-template classic-template">
         <div class="header" data-editable="true">
-          <h1 class="title" data-editable="true">[nazwa_aukcji]</h1>
+          <h1 class="title" data-editable="true">[nazwa]</h1>
           <div class="price" data-editable="true">Cena: [cena] PLN</div>
         </div>
         
@@ -54,7 +55,7 @@ const defaultTemplates: Template[] = [
             
             <div class="features" data-editable="true">
               <h3 data-editable="true">Cechy produktu:</h3>
-              <div data-editable="true">[cechy_lista]</div>
+              <div data-editable="true">• Wysoka jakość<br>• Szybka wysyłka<br>• Gwarancja</div>
             </div>
           </div>
         </div>
@@ -147,7 +148,7 @@ const defaultTemplates: Template[] = [
     htmlContent: `
       <div class="ebay-template modern-template">
         <div class="gradient-header" data-editable="true">
-          <h1 class="modern-title" data-editable="true">[nazwa_aukcji]</h1>
+          <h1 class="modern-title" data-editable="true">[nazwa]</h1>
           <div class="price-badge" data-editable="true">[cena] PLN</div>
         </div>
         
@@ -172,7 +173,7 @@ const defaultTemplates: Template[] = [
             
             <div class="features-grid" data-editable="true">
               <h3 data-editable="true">Specyfikacja</h3>
-              <div data-editable="true">[cechy_lista]</div>
+              <div data-editable="true">• Nowoczesny design<br>• Wysokiej jakości materiały<br>• Gwarancja producenta</div>
             </div>
           </div>
         </div>
@@ -296,7 +297,7 @@ const defaultTemplates: Template[] = [
     htmlContent: `
       <div class="ebay-template minimal-template">
         <header class="minimal-header" data-editable="true">
-          <h1 class="clean-title" data-editable="true">[nazwa_aukcji]</h1>
+          <h1 class="clean-title" data-editable="true">[nazwa]</h1>
           <div class="category-tag" data-editable="true">[kategoria]</div>
         </header>
         
@@ -318,7 +319,7 @@ const defaultTemplates: Template[] = [
             
             <div class="specs-section" data-editable="true">
               <h2 data-editable="true">Specyfikacja</h2>
-              <div class="specs-list" data-editable="true">[cechy_lista]</div>
+              <div class="specs-list" data-editable="true">• Minimalistyczny design<br>• Łatwe w użyciu<br>• Wysokiej jakości wykonanie</div>
             </div>
           </section>
         </main>
@@ -1662,6 +1663,276 @@ const defaultTemplates: Template[] = [
     `,
     createdAt: '2024-01-06T00:00:00Z',
     updatedAt: '2024-01-06T00:00:00Z'
+  },
+  {
+    id: 'template-7',
+    name: 'Podstawowy Starter',
+    description: 'Prosty szablon do szybkiej edycji - idealny punkt startowy',
+    category: 'inne',
+    thumbnail: 'https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?auto=compress&cs=tinysrgb&w=400',
+    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]'],
+    htmlContent: `
+      <div class="ebay-template starter-template">
+        <div class="starter-header" data-editable="true">
+          <h1 data-editable="true">[nazwa]</h1>
+          <div class="price" data-editable="true">[cena] PLN</div>
+        </div>
+        
+        <div class="starter-content">
+          <div class="image-wrapper" data-editable="true">
+            <img src="[obrazek]" alt="[nazwa]" data-editable="true" />
+          </div>
+          
+          <div class="description" data-editable="true">
+            <h2 data-editable="true">Opis</h2>
+            <p data-editable="true">[opis]</p>
+          </div>
+        </div>
+        
+        <div class="starter-footer" data-editable="true">
+          <p data-editable="true">Skontaktuj się z nami w razie pytań!</p>
+        </div>
+      </div>
+    `,
+    cssContent: `
+      .starter-template {
+        font-family: Arial, sans-serif;
+        max-width: 700px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #ffffff;
+        border: 1px solid #e0e0e0;
+      }
+      
+      .starter-header {
+        text-align: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #007bff;
+      }
+      
+      .starter-header h1 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 10px;
+      }
+      
+      .price {
+        font-size: 20px;
+        color: #007bff;
+        font-weight: bold;
+      }
+      
+      .starter-content {
+        margin-bottom: 20px;
+      }
+      
+      .image-wrapper {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+      
+      .image-wrapper img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+      }
+      
+      .description h2 {
+        color: #333;
+        font-size: 18px;
+        margin-bottom: 10px;
+      }
+      
+      .description p {
+        line-height: 1.6;
+        color: #666;
+      }
+      
+      .starter-footer {
+        text-align: center;
+        padding-top: 15px;
+        border-top: 1px solid #e0e0e0;
+        color: #888;
+      }
+    `,
+    createdAt: '2024-01-07T00:00:00Z',
+    updatedAt: '2024-01-07T00:00:00Z'
+  },
+  {
+    id: 'template-8',
+    name: 'Uniwersalny Baselinker',
+    description: 'Gotowy szablon z wszystkimi popularnymi tagami Baselinker',
+    category: 'inne',
+    thumbnail: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
+    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]', '[stan]', '[gwarancja]'],
+    htmlContent: `
+      <div class="ebay-template universal-template">
+        <div class="universal-header" data-editable="true">
+          <h1 data-editable="true">[nazwa]</h1>
+          <div class="meta-info" data-editable="true">
+            <span class="category" data-editable="true">Kategoria: [kategoria]</span>
+            <span class="producer" data-editable="true">Producent: [producent]</span>
+          </div>
+        </div>
+        
+        <div class="universal-main">
+          <div class="product-image" data-editable="true">
+            <img src="[obrazek]" alt="[nazwa]" data-editable="true" />
+          </div>
+          
+          <div class="product-details" data-editable="true">
+            <div class="price-section" data-editable="true">
+              <div class="price" data-editable="true">[cena] PLN</div>
+              <div class="condition" data-editable="true">Stan: [stan]</div>
+            </div>
+            
+            <div class="description-section" data-editable="true">
+              <h2 data-editable="true">Opis produktu</h2>
+              <div data-editable="true">[opis]</div>
+            </div>
+            
+            <div class="warranty-section" data-editable="true">
+              <h3 data-editable="true">Gwarancja</h3>
+              <p data-editable="true">[gwarancja]</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="universal-footer" data-editable="true">
+          <div class="contact-info" data-editable="true">
+            <h3 data-editable="true">Informacje o sprzedawcy</h3>
+            <p data-editable="true">Profesjonalna obsługa • Szybka wysyłka • Gwarancja satysfakcji</p>
+          </div>
+        </div>
+      </div>
+    `,
+    cssContent: `
+      .universal-template {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        background: #f8f9fa;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      }
+      
+      .universal-header {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        padding: 30px;
+        text-align: center;
+      }
+      
+      .universal-header h1 {
+        font-size: 28px;
+        margin-bottom: 15px;
+        font-weight: 600;
+      }
+      
+      .meta-info {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        font-size: 14px;
+      }
+      
+      .meta-info span {
+        background: rgba(255,255,255,0.2);
+        padding: 5px 15px;
+        border-radius: 20px;
+      }
+      
+      .universal-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        background: white;
+      }
+      
+      .product-image {
+        padding: 20px;
+      }
+      
+      .product-image img {
+        width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      }
+      
+      .product-details {
+        padding: 20px;
+      }
+      
+      .price-section {
+        margin-bottom: 20px;
+        padding: 15px;
+        background: #e3f2fd;
+        border-radius: 8px;
+      }
+      
+      .price {
+        font-size: 24px;
+        color: #1976d2;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      
+      .condition {
+        color: #666;
+        font-size: 14px;
+      }
+      
+      .description-section {
+        margin-bottom: 20px;
+      }
+      
+      .description-section h2 {
+        color: #333;
+        font-size: 18px;
+        margin-bottom: 10px;
+        border-bottom: 2px solid #28a745;
+        padding-bottom: 5px;
+      }
+      
+      .warranty-section {
+        background: #fff3cd;
+        padding: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #ffc107;
+      }
+      
+      .warranty-section h3 {
+        color: #856404;
+        margin-bottom: 10px;
+      }
+      
+      .universal-footer {
+        background: #343a40;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+      
+      .contact-info h3 {
+        margin-bottom: 10px;
+        color: #28a745;
+      }
+      
+      @media (max-width: 768px) {
+        .universal-main {
+          grid-template-columns: 1fr;
+        }
+        
+        .meta-info {
+          flex-direction: column;
+          gap: 10px;
+        }
+      }
+    `,
+    createdAt: '2024-01-08T00:00:00Z',
+    updatedAt: '2024-01-08T00:00:00Z'
   }
 ];
 
@@ -1674,9 +1945,39 @@ export const useTemplateStore = create<TemplateState>()(
       
       initializeTemplates: () => {
         const { templates } = get();
+        
+        // Sprawdź czy są nowe defaultTemplates, które nie istnieją w store
+        const existingIds = templates.map(t => t.id);
+        const newTemplates = defaultTemplates.filter(dt => !existingIds.includes(dt.id));
+        
         if (templates.length === 0) {
+          // Jeśli store jest pusty, załaduj wszystkie defaultTemplates
           set({ templates: defaultTemplates });
+        } else if (newTemplates.length > 0) {
+          // Jeśli są nowe szablony, dodaj je do istniejących
+          set({ templates: [...templates, ...newTemplates] });
         }
+        
+        // Opcjonalnie: aktualizuj istniejące szablony jeśli się zmieniły
+        const updatedTemplates = templates.map(existingTemplate => {
+          const defaultTemplate = defaultTemplates.find(dt => dt.id === existingTemplate.id);
+          if (defaultTemplate && defaultTemplate.updatedAt > existingTemplate.updatedAt) {
+            return defaultTemplate;
+          }
+          return existingTemplate;
+        });
+        
+        // Dodaj nowe szablony do zaktualizowanych
+        const finalTemplates = [...updatedTemplates, ...newTemplates];
+        
+        if (finalTemplates.length !== templates.length || newTemplates.length > 0) {
+          set({ templates: finalTemplates });
+        }
+      },
+      
+      resetTemplates: () => {
+        // Wymuś pełne przeładowanie wszystkich defaultTemplates
+        set({ templates: defaultTemplates });
       },
       
       createTemplate: (templateData) => {

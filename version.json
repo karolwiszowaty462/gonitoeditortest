@@ -1,0 +1,42 @@
+{
+  "version": "0.2.0",
+  "codename": "Beta 0.2",
+  "releaseDate": "2025-07-31",
+  "status": "beta",
+  "features": {
+    "templates": 8,
+    "fixedBugs": 7,
+    "newFeatures": 4
+  },
+  "changelog": {
+    "fixed": [
+      "Naprawiono błędy tagów w pierwszych 3 szablonach",
+      "Poprawiono parser HTML w edytorze",
+      "CAŁKOWICIE naprawiono duplikowanie bloków przy przenoszeniu",
+      "Usunięto problematyczny useEffect powodujący re-parsowanie",
+      "Naprawiono funkcje moveBlock i removeBlock",
+      "Skorygowano niezgodności baselinkerTags",
+      "Poprawiono rozpoznawanie elementów data-editable"
+    ],
+    "added": [
+      "Szablon 'Podstawowy Starter' (template-7)",
+      "Szablon 'Uniwersalny Baselinker' (template-8)",
+      "Funkcja resetTemplates",
+      "Automatyczna synchronizacja nowych szablonów"
+    ],
+    "improved": [
+      "Stabilność edytora bloków",
+      "Spójność tagów Baselinker",
+      "Responsywność szablonów",
+      "Zarządzanie kolejnością bloków"
+    ]
+  },
+  "nextVersion": {
+    "planned": "0.3.0",
+    "features": [
+      "Eksport szablonów do HTML/CSS",
+      "Import własnych szablonów",
+      "Zaawansowane opcje stylowania"
+    ]
+  }
+}

@@ -7,8 +7,7 @@ import {
   Smartphone, 
   Tablet, 
   Monitor,
-  Undo,
-  Redo,
+
   Copy,
   Download,
   Upload,
@@ -20,7 +19,6 @@ import {
   Edit3,
   Type,
   Image as ImageIcon,
-  Link,
   Square,
   List,
   Table,
@@ -28,8 +26,7 @@ import {
   ShoppingCart,
   CreditCard,
   Truck,
-  Award,
-  User,
+
   Tag,
   Package,
   Bold,
@@ -44,7 +41,6 @@ import {
   Move,
   RotateCw,
   Minus,
-  Plus,
   Info,
   DollarSign,
   Factory,
@@ -70,7 +66,7 @@ interface ElementProperties {
 const Editor: React.FC = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { templates, activeTemplate, setActiveTemplate, updateTemplate, addTemplate, duplicateTemplate } = useTemplateStore();
+  const { templates, activeTemplate, setActiveTemplate, updateTemplate, createTemplate, duplicateTemplate } = useTemplateStore();
   
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview');
   const [activePanel, setActivePanel] = useState<'blocks' | 'order' | 'code' | null>('blocks');
@@ -87,7 +83,6 @@ const Editor: React.FC = () => {
   const [draggedBlockId, setDraggedBlockId] = useState<string | null>(null);
   const [draggedOverBlockId, setDraggedOverBlockId] = useState<string | null>(null);
 
-  // Element properties state
   const [elementText, setElementText] = useState('');
   const [elementClasses, setElementClasses] = useState('');
   const [elementId, setElementId] = useState('');
@@ -106,7 +101,6 @@ const Editor: React.FC = () => {
   const [elementBorderRadius, setElementBorderRadius] = useState('');
   const [elementBorder, setElementBorder] = useState('');
   
-  // Image specific properties
   const [elementObjectFit, setElementObjectFit] = useState('');
   const [elementObjectPosition, setElementObjectPosition] = useState('');
   const [elementFloat, setElementFloat] = useState('');
@@ -121,7 +115,7 @@ const Editor: React.FC = () => {
 
   const previewRef = useRef<HTMLIFrameElement>(null);
 
-  // POPRAWIONA FUNKCJA PARSOWANIA HTML DO BLOKÓW - ROZSZERZONA O AUTOMATYCZNE DODAWANIE data-editable
+  // FUNKCJA PARSOWANIA HTML DO BLOKÓW
   const parseHtmlIntoBlocks = (html: string): Array<{id: string, type: string, content: string, position: number}> => {
     if (!html || html.trim() === '') return [];
     
@@ -134,147 +128,169 @@ const Editor: React.FC = () => {
     const blocks: Array<{id: string, type: string, content: string, position: number}> = [];
     let position = 0;
     
-    // Funkcja do automatycznego dodawania data-editable do elementów
-    const addEditableAttributes = (element: Element) => {
+    const processedElements = new Set<Element>();
+    
+    // Funkcja do określania typu bloku
+    const getBlockType = (element: Element): string => {
+      const tagName = element.tagName.toLowerCase();
+      const className = element.className || '';
+      if (className.includes('ebay-title') || className.includes('pro-title') || className.includes('luxury-title') || 
+          className.includes('premium-title') || className.includes('clean-title') || className.includes('modern-title')) {
+        return 'ebay-title';
+      } else if (className.includes('ebay-price') || className.includes('pro-price') || className.includes('luxury-price') || 
+                className.includes('premium-price') || className.includes('price-badge') || className.includes('price-container') || 
+                className.includes('price-section')) {
+        return 'ebay-price';
+      } else if (className.includes('ebay-gallery') || className.includes('pro-gallery') || className.includes('luxury-gallery') || 
+                className.includes('premium-gallery') || className.includes('image-section') || className.includes('main-image') || 
+                className.includes('gallery')) {
+        return 'ebay-gallery';
+      } else if (className.includes('ebay-description') || className.includes('pro-description') || className.includes('luxury-description') || 
+                className.includes('premium-description') || className.includes('description')) {
+        return 'ebay-description';
+      } else if (className.includes('bl-product-name') || className.includes('bl-auction-title')) {
+        return 'bl-product-name';
+      } else if (className.includes('bl-price')) {
+        return 'bl-price';
+      } else if (className.includes('bl-images') || className.includes('bl-main-image') || className.includes('bl-additional-images')) {
+        return 'bl-images';
+      } else if (className.includes('separator')) {
+        if (className.includes('2col')) return 'separator-2col';
+        else if (className.includes('3col')) return 'separator-3col';
+        else if (className.includes('4col')) return 'separator-4col';
+        else return 'separator-line';
+      } else if (className.includes('brand') || className.includes('producer') || className.includes('logo')) {
+        return 'brand-section';
+      } else if (className.includes('features') || className.includes('benefits') || className.includes('highlights')) {
+        return 'product-features';
+      } else if (className.includes('specs') || className.includes('specifications') || className.includes('spec-table')) {
+        return 'spec-table';
+      } else if (className.includes('shipping') || className.includes('delivery')) {
+        return 'shipping-info';
+      } else if (className.includes('care') || className.includes('instructions')) {
+        return 'care-instructions';
+      } else if (tagName === 'img') {
+        return 'image';
+      } else if (tagName === 'table') {
+        return 'spec-table';
+      } else if (tagName === 'ul' || tagName === 'ol') {
+        return 'list';
+      } else if (className.includes('header') || tagName === 'header') {
+        return 'header-section';
+      } else if (className.includes('footer') || tagName === 'footer') {
+        return 'footer-section';
+      } else if (className.includes('showcase') || className.includes('section') || tagName === 'section') {
+        return 'section';
+      }
+      
+      return 'container';
+    };
+    
+    // Funkcja sprawdzająca czy element powinien być edytowalny (obecnie nieużywana, ale zachowana na potrzeby przyszłego rozwoju)
+    const isElementEditable = (element: Element): boolean => {
       const tagName = element.tagName.toLowerCase();
       const className = element.className || '';
       
-      // Dodaj data-editable do głównych elementów
-      if (!element.hasAttribute('data-editable')) {
-        // Sprawdź czy element powinien być edytowalny
-        const shouldBeEditable = 
-          tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4' || tagName === 'h5' || tagName === 'h6' ||
-          tagName === 'p' || tagName === 'span' || tagName === 'div' || tagName === 'section' ||
-          tagName === 'img' || tagName === 'a' || tagName === 'button' ||
-          className.includes('title') || className.includes('price') || className.includes('description') ||
-          className.includes('gallery') || className.includes('image') || className.includes('content') ||
-          className.includes('header') || className.includes('footer') || className.includes('section') ||
-          className.includes('brand') || className.includes('product') || className.includes('feature') ||
-          className.includes('spec') || className.includes('highlight') || className.includes('benefit') ||
-          className.includes('delivery') || className.includes('shipping') || className.includes('care') ||
-          className.includes('option') || className.includes('badge') || className.includes('label') ||
-          className.includes('value') || className.includes('info') || className.includes('details');
-        
-        if (shouldBeEditable) {
-          element.setAttribute('data-editable', 'true');
-        }
-      }
-      
-      // Rekurencyjnie przetwórz dzieci
-      Array.from(element.children).forEach(child => {
-        addEditableAttributes(child);
-      });
+      return tagName === 'h1' || tagName === 'h2' || tagName === 'h3' || tagName === 'h4' || tagName === 'h5' || tagName === 'h6' ||
+             tagName === 'p' || tagName === 'img' || tagName === 'a' || tagName === 'button' ||
+             className.includes('title') || className.includes('price') || className.includes('description') ||
+             className.includes('gallery') || className.includes('image') || className.includes('content') ||
+             className.includes('header') || className.includes('footer') || className.includes('section') ||
+             className.includes('features') || className.includes('specs') || className.includes('shipping') ||
+             element.hasAttribute('data-editable');
     };
     
-    // Funkcja rekurencyjna do parsowania elementów
-    const parseElement = (element: Element, depth: number = 0) => {
-      // Najpierw dodaj atrybuty edytowalne
-      addEditableAttributes(element);
+    // Funkcja do identyfikacji głównych bloków szablonu
+    const identifyMainBlocks = () => {
+      // Najpierw szukamy głównych sekcji szablonu
+      const mainSections = Array.from(container.querySelectorAll('.header, .main-content, .footer, .description-section, .image-section, .features, header, footer, section'));
       
-      // Sprawdź czy element ma atrybut data-editable lub jest głównym kontenerem
-      if (element.hasAttribute('data-editable') || depth === 0) {
-        const className = element.className || '';
-        const tagName = element.tagName.toLowerCase();
-        
-        // Określ typ bloku na podstawie klasy CSS lub tagu
-        let blockType = 'container';
-        
-        // Mapowanie klas CSS na typy bloków - ROZSZERZONE
-        if (className.includes('ebay-title') || className.includes('pro-title') || className.includes('luxury-title') || className.includes('premium-title') || className.includes('clean-title') || className.includes('modern-title')) {
-          blockType = 'ebay-title';
-        } else if (className.includes('ebay-price') || className.includes('pro-price') || className.includes('luxury-price') || className.includes('premium-price') || className.includes('price-badge') || className.includes('price-container') || className.includes('price-section')) {
-          blockType = 'ebay-price';
-        } else if (className.includes('ebay-gallery') || className.includes('pro-gallery') || className.includes('luxury-gallery') || className.includes('premium-gallery') || className.includes('image-section') || className.includes('main-image') || className.includes('gallery')) {
-          blockType = 'ebay-gallery';
-        } else if (className.includes('ebay-description') || className.includes('pro-description') || className.includes('luxury-description') || className.includes('premium-description') || className.includes('description')) {
-          blockType = 'ebay-description';
-        } else if (className.includes('bl-product-name') || className.includes('bl-auction-title')) {
-          blockType = 'bl-product-name';
-        } else if (className.includes('bl-price')) {
-          blockType = 'bl-price';
-        } else if (className.includes('bl-images') || className.includes('bl-main-image') || className.includes('bl-additional-images')) {
-          blockType = 'bl-images';
-        } else if (className.includes('separator')) {
-          if (className.includes('2col')) blockType = 'separator-2col';
-          else if (className.includes('3col')) blockType = 'separator-3col';
-          else if (className.includes('4col')) blockType = 'separator-4col';
-          else blockType = 'separator-line';
-        } else if (className.includes('brand') || className.includes('producer') || className.includes('logo')) {
-          blockType = 'brand-section';
-        } else if (className.includes('features') || className.includes('benefits') || className.includes('highlights')) {
-          blockType = 'product-features';
-        } else if (className.includes('specs') || className.includes('specifications') || className.includes('spec-table')) {
-          blockType = 'spec-table';
-        } else if (className.includes('shipping') || className.includes('delivery')) {
-          blockType = 'shipping-info';
-        } else if (className.includes('care') || className.includes('instructions')) {
-          blockType = 'care-instructions';
-        } else if (tagName === 'img') {
-          blockType = 'image';
-        } else if (tagName === 'table') {
-          blockType = 'spec-table';
-        } else if (tagName === 'ul' || tagName === 'ol') {
-          blockType = 'list';
-        } else if (className.includes('header') || tagName === 'header') {
-          blockType = 'header-section';
-        } else if (className.includes('footer') || tagName === 'footer') {
-          blockType = 'footer-section';
-        } else if (className.includes('showcase') || className.includes('section') || tagName === 'section') {
-          blockType = 'section';
-        }
-        
-        // Dodaj blok tylko jeśli ma data-editable lub jest głównym elementem
-        if (element.hasAttribute('data-editable') || depth === 0) {
-          blocks.push({
-            id: `${blockType}-${Date.now()}-${position}`,
-            type: blockType,
-            content: element.outerHTML,
-            position: position++
-          });
-        }
-      } else {
-        // Jeśli element nie ma data-editable, sprawdź jego dzieci
-        Array.from(element.children).forEach(child => {
-          parseElement(child, depth + 1);
+      if (mainSections.length > 0) {
+        // Jeśli znaleźliśmy główne sekcje, dodajemy je jako bloki
+        mainSections.forEach(section => {
+          if (!processedElements.has(section)) {
+            processedElements.add(section);
+            const blockType = getBlockType(section);
+            blocks.push({
+              id: `${blockType}-${Date.now()}-${position}`,
+              type: blockType,
+              content: section.outerHTML,
+              position: position++
+            });
+          }
+        });
+        return true;
+      }
+      return false;
+    };
+    
+    // Funkcja do identyfikacji pojedynczych elementów edytowalnych
+    const identifyEditableElements = () => {
+      // Szukamy elementów z atrybutem data-editable
+      const editableElements = Array.from(container.querySelectorAll('[data-editable], h1, h2, h3, p.title, div.price, div.description, div.gallery, img.main-image'));
+      
+      if (editableElements.length > 0) {
+        // Jeśli znaleźliśmy elementy edytowalne, dodajemy je jako bloki
+        editableElements.forEach(element => {
+          if (!processedElements.has(element)) {
+            // Sprawdź czy element nie jest już częścią przetworzonego elementu
+            let isChildOfProcessed = false;
+            for (const processed of processedElements) {
+              if (processed.contains(element) && processed !== element) {
+                isChildOfProcessed = true;
+                break;
+              }
+            }
+            
+            if (!isChildOfProcessed) {
+              processedElements.add(element);
+              const blockType = getBlockType(element);
+              blocks.push({
+                id: `${blockType}-${Date.now()}-${position}`,
+                type: blockType,
+                content: element.outerHTML,
+                position: position++
+              });
+            }
+          }
+        });
+        return true;
+      }
+      return false;
+    };
+    
+    // Funkcja do identyfikacji pozostałych elementów jako bloków
+    const identifyRemainingElements = () => {
+      // Jeśli nadal nie mamy bloków, przetwarzamy wszystkie bezpośrednie dzieci kontenera
+      if (blocks.length === 0) {
+        Array.from(container.children).forEach(child => {
+          if (!processedElements.has(child)) {
+            processedElements.add(child);
+            const blockType = getBlockType(child);
+            blocks.push({
+              id: `${blockType}-${Date.now()}-${position}`,
+              type: blockType,
+              content: child.outerHTML,
+              position: position++
+            });
+          }
         });
       }
     };
     
-    // Parsuj wszystkie dzieci kontenera
-    Array.from(container.children).forEach(child => {
-      parseElement(child, 0);
-    });
+    // Strategia parsowania: najpierw główne sekcje, potem elementy edytowalne, na końcu pozostałe elementy
+    const mainBlocksFound = identifyMainBlocks();
+    const editableElementsFound = identifyEditableElements();
     
-    // Jeśli nie znaleziono żadnych bloków, spróbuj parsować główne sekcje jako bloki
-    if (blocks.length === 0) {
-      Array.from(container.children).forEach(child => {
-        const className = child.className || '';
-        const tagName = child.tagName.toLowerCase();
-        
-        // Automatycznie dodaj data-editable
-        addEditableAttributes(child);
-        
-        let blockType = 'container';
-        if (className.includes('header')) blockType = 'header-section';
-        else if (className.includes('gallery') || className.includes('image')) blockType = 'ebay-gallery';
-        else if (className.includes('price')) blockType = 'ebay-price';
-        else if (className.includes('description')) blockType = 'ebay-description';
-        else if (className.includes('showcase') || className.includes('content')) blockType = 'section';
-        else if (tagName === 'div' && child.children.length > 0) blockType = 'section';
-        
-        blocks.push({
-          id: `${blockType}-${Date.now()}-${position}`,
-          type: blockType,
-          content: child.outerHTML,
-          position: position++
-        });
-      });
+    // Jeśli nie znaleźliśmy ani głównych bloków, ani elementów edytowalnych, przetwarzamy pozostałe elementy
+    if (!mainBlocksFound && !editableElementsFound) {
+      identifyRemainingElements();
     }
     
-    return blocks;
+    // Sortuj bloki według pozycji
+    return blocks.sort((a, b) => a.position - b.position);
   };
 
-  // Template blocks definitions - ROZSZERZONE O NOWE BLOKI BASELINKER
   const blockCategories = {
     'Baselinker - Podstawowe': [
       { id: 'bl-nazwa', name: 'Nazwa produktu', icon: Type, content: '<h1 class="bl-product-name" data-editable="true">[nazwa]</h1>' },
@@ -929,15 +945,8 @@ const Editor: React.FC = () => {
     return () => window.removeEventListener('message', handleMessage);
   }, []);
 
-  // AKTUALIZACJA BLOKÓW PRZY ZMIANIE HTML
-  useEffect(() => {
-    if (htmlContent && htmlContent !== '<div class="template-container" data-editable="true" style="padding: 20px; font-family: Arial, sans-serif; min-height: 400px; border: 2px dashed #ccc; text-align: center; display: flex; align-items: center; justify-content: center; color: #666;"><p>Kliknij "Bloki" aby dodać pierwszy element do szablonu</p></div>') {
-      const parsedBlocks = parseHtmlIntoBlocks(htmlContent);
-      if (parsedBlocks.length > 0 && parsedBlocks.length !== templateBlocks.length) {
-        setTemplateBlocks(parsedBlocks);
-      }
-    }
-  }, [htmlContent]);
+  // USUNIĘTO PROBLEMATYCZNY useEffect - powodował duplikowanie bloków
+  // Bloki są teraz zarządzane bezpośrednio przez funkcje moveBlock, addBlock, removeBlock
 
   const handleSave = () => {
     const templateData = {
@@ -954,7 +963,7 @@ const Editor: React.FC = () => {
     if (id && activeTemplate) {
       updateTemplate(id, templateData);
     } else {
-      addTemplate(templateData);
+      createTemplate(templateData);
       navigate('/templates');
     }
   };
@@ -1008,7 +1017,7 @@ const Editor: React.FC = () => {
         isPublic: false,
         baselinkerTags: []
       };
-      addTemplate(templateData);
+      createTemplate(templateData);
       navigate('/templates');
     }
     setShowMoreMenu(false);
@@ -1021,21 +1030,11 @@ const Editor: React.FC = () => {
     e.dataTransfer.setData('isFromLibrary', isFromLibrary.toString());
     setDraggedBlockId(blockId);
     
-    // Dodaj efekt wizualny dla przeciąganego elementu
     if (e.currentTarget.classList) {
       e.currentTarget.classList.add('dragging');
     }
     
-    // Ustaw efekt wizualny dla kursora
     e.dataTransfer.effectAllowed = 'move';
-    
-    // Opcjonalnie możemy ustawić obraz podczas przeciągania
-    // const dragImage = document.createElement('div');
-    // dragImage.textContent = 'Blok: ' + blockId;
-    // dragImage.style.cssText = 'padding: 10px; background: #3b82f6; color: white; border-radius: 4px; position: absolute; top: -1000px;';
-    // document.body.appendChild(dragImage);
-    // e.dataTransfer.setDragImage(dragImage, 0, 0);
-    // setTimeout(() => document.body.removeChild(dragImage), 0);
   };
 
   const handleDragOver = (e: DragEvent<HTMLDivElement>, blockId?: string) => {
@@ -1045,7 +1044,6 @@ const Editor: React.FC = () => {
     if (blockId) {
       setDraggedOverBlockId(blockId);
       
-      // Dodaj klasę dla elementu nad którym przeciągamy
       const element = e.currentTarget as HTMLElement;
       if (element && !element.classList.contains('drag-over')) {
         element.classList.add('drag-over');
@@ -1057,7 +1055,6 @@ const Editor: React.FC = () => {
     e.preventDefault();
     setDraggedOverBlockId(null);
     
-    // Usuń klasę dla elementu z którego wychodzimy
     const element = e.currentTarget as HTMLElement;
     if (element && element.classList.contains('drag-over')) {
       element.classList.remove('drag-over');
@@ -1070,28 +1067,23 @@ const Editor: React.FC = () => {
     const blockContent = e.dataTransfer.getData('blockContent');
     const isFromLibrary = e.dataTransfer.getData('isFromLibrary') === 'true';
     
-    // Usuń efekt wizualny
     setDraggedBlockId(null);
     setDraggedOverBlockId(null);
     
-    // Usuń klasę dla elementu na który upuszczamy
     const element = e.currentTarget as HTMLElement;
     if (element && element.classList.contains('drag-over')) {
       element.classList.remove('drag-over');
     }
     
     if (isFromLibrary) {
-      // Dodaj nowy blok z biblioteki
       addBlock(blockId, blockContent);
     } else if (targetIndex !== undefined) {
-      // Przenieś istniejący blok
       const sourceIndex = templateBlocks.findIndex(block => block.id === blockId);
       if (sourceIndex !== -1 && sourceIndex !== targetIndex) {
         const newBlocks = [...templateBlocks];
         const [movedBlock] = newBlocks.splice(sourceIndex, 1);
         newBlocks.splice(targetIndex, 0, movedBlock);
         
-        // Aktualizuj pozycje
         const updatedBlocks = newBlocks.map((block, index) => ({
           ...block,
           position: index
@@ -1099,20 +1091,25 @@ const Editor: React.FC = () => {
         
         setTemplateBlocks(updatedBlocks);
         
-        // Aktualizuj HTML
-        const reorderedHtml = updatedBlocks.map(block => block.content).join('\n');
-        setHtmlContent(reorderedHtml);
+        const tempContainer = document.createElement('div');
+        updatedBlocks.forEach(block => {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = block.content;
+          if (tempDiv.firstChild) {
+            tempContainer.appendChild(tempDiv.firstChild);
+          }
+        });
+        
+        setHtmlContent(tempContainer.innerHTML);
       }
     }
   };
 
   const handleDragEnd = (e: DragEvent<HTMLDivElement>) => {
-    // Usuń efekt wizualny
     if (e.currentTarget.classList) {
       e.currentTarget.classList.remove('dragging');
     }
     
-    // Usuń wszystkie pozostałe efekty wizualne
     document.querySelectorAll('.drag-over').forEach(el => {
       el.classList.remove('drag-over');
     });
@@ -1131,40 +1128,74 @@ const Editor: React.FC = () => {
     
     setTemplateBlocks([...templateBlocks, newBlock]);
     
-    // If this is the first block and we have the empty template, replace it
     if (templateBlocks.length === 0 && htmlContent.includes('Kliknij "Bloki" aby dodać pierwszy element')) {
       setHtmlContent(blockContent);
     } else {
-      setHtmlContent(prev => prev + '\n' + blockContent);
+      const tempContainer = document.createElement('div');
+      tempContainer.innerHTML = htmlContent;
+      
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = blockContent;
+      
+      if (tempDiv.firstChild) {
+        tempContainer.appendChild(tempDiv.firstChild);
+      }
+      
+      setHtmlContent(tempContainer.innerHTML);
     }
   };
 
-  // Funkcja do przenoszenia bloków (stara metoda - przyciski)
+  // Funkcja do przenoszenia bloków (strzałki)
   const moveBlock = (index: number, direction: 'up' | 'down') => {
     const newBlocks = [...templateBlocks];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     
     if (targetIndex >= 0 && targetIndex < newBlocks.length) {
       [newBlocks[index], newBlocks[targetIndex]] = [newBlocks[targetIndex], newBlocks[index]];
-      setTemplateBlocks(newBlocks);
       
-      // Update HTML content order
-      const reorderedHtml = newBlocks.map(block => block.content).join('\n');
-      setHtmlContent(reorderedHtml);
+      const updatedBlocks = newBlocks.map((block, idx) => ({
+        ...block,
+        position: idx
+      }));
+      
+      setTemplateBlocks(updatedBlocks);
+      
+      const tempContainer = document.createElement('div');
+      updatedBlocks.forEach(block => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = block.content;
+        if (tempDiv.firstChild) {
+          tempContainer.appendChild(tempDiv.firstChild);
+        }
+      });
+      
+      setHtmlContent(tempContainer.innerHTML);
     }
   };
 
   const removeBlock = (index: number) => {
     const newBlocks = templateBlocks.filter((_, i) => i !== index);
-    setTemplateBlocks(newBlocks);
     
-    // Update HTML content
-    if (newBlocks.length === 0) {
-      // Return to empty template
+    const updatedBlocks = newBlocks.map((block, idx) => ({
+      ...block,
+      position: idx
+    }));
+    
+    setTemplateBlocks(updatedBlocks);
+    
+    if (updatedBlocks.length === 0) {
       setHtmlContent('<div class="template-container" data-editable="true" style="padding: 20px; font-family: Arial, sans-serif; min-height: 400px; border: 2px dashed #ccc; text-align: center; display: flex; align-items: center; justify-content: center; color: #666;"><p>Kliknij "Bloki" aby dodać pierwszy element do szablonu</p></div>');
     } else {
-      const updatedHtml = newBlocks.map(block => block.content).join('\n');
-      setHtmlContent(updatedHtml);
+      const tempContainer = document.createElement('div');
+      updatedBlocks.forEach(block => {
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = block.content;
+        if (tempDiv.firstChild) {
+          tempContainer.appendChild(tempDiv.firstChild);
+        }
+      });
+      
+      setHtmlContent(tempContainer.innerHTML);
     }
   };
 

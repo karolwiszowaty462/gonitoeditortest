@@ -8,10 +8,7 @@ import {
   Shield, 
   User,
   Mail,
-  Calendar,
-  MoreVertical,
   Phone,
-  Building,
   Key,
   UserCheck,
   UserX,
@@ -79,7 +76,6 @@ const UserManagement: React.FC = () => {
     setError('');
     setIsLoading(true);
 
-    // Validation
     if (!newUser.name || !newUser.email || !newUser.password) {
       setError('Wszystkie pola są wymagane');
       setIsLoading(false);

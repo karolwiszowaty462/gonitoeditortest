@@ -10,7 +10,6 @@ import {
   Eye,
   EyeOff,
   AlertTriangle,
-  Info,
   Check,
   X,
   RefreshCw
@@ -31,7 +30,6 @@ const Settings: React.FC = () => {
     confirmPassword: ''
   });
 
-  // Initialize settings with user data
   useEffect(() => {
     if (user && (!settings.name || !settings.email)) {
       updateSettings({
@@ -41,7 +39,6 @@ const Settings: React.FC = () => {
     }
   }, [user, settings.name, settings.email, updateSettings]);
 
-  // Apply theme on component mount and when settings change
   useEffect(() => {
     applyTheme();
   }, [applyTheme, settings.theme, settings.fontSize]);
@@ -58,7 +55,6 @@ const Settings: React.FC = () => {
     setIsSaving(true);
     
     try {
-      // Update user profile if changed
       if (settings.name !== user?.name || settings.email !== user?.email) {
         updateUser({
           name: settings.name,
@@ -66,7 +62,6 @@ const Settings: React.FC = () => {
         });
       }
       
-      // Handle password change
       if (passwordData.newPassword && passwordData.confirmPassword) {
         if (passwordData.newPassword !== passwordData.confirmPassword) {
           setSaveMessage('Hasła nie są identyczne!');
@@ -80,17 +75,14 @@ const Settings: React.FC = () => {
           return;
         }
         
-        // Here you would normally validate current password and update
         console.log('Password would be updated');
         setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       }
       
-      // Simulate save delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       setSaveMessage('Ustawienia zostały pomyślnie zapisane!');
       
-      // Clear message after 3 seconds
       setTimeout(() => setSaveMessage(''), 3000);
       
     } catch (error) {

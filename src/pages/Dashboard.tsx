@@ -17,7 +17,6 @@ const Dashboard: React.FC = () => {
   const { templates, initializeTemplates } = useTemplateStore();
   const { user } = useAuthStore();
 
-  // Initialize templates on component mount
   useEffect(() => {
     initializeTemplates();
   }, [initializeTemplates]);
@@ -63,7 +62,6 @@ const Dashboard: React.FC = () => {
       />
       
       <div className="flex-1 p-6 bg-slate-900">
-        {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {stats.map((stat, index) => (
             <div key={index} className="bg-slate-800 border border-slate-700 rounded-xl p-6">
@@ -81,7 +79,6 @@ const Dashboard: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Recent Templates */}
           <div className="lg:col-span-2">
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
               <div className="flex items-center justify-between mb-6">
@@ -148,7 +145,6 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
 
-            {/* Activity */}
             <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
               <h3 className="text-lg font-semibold text-white mb-4">Ostatnia aktywność</h3>
               <div className="space-y-3">

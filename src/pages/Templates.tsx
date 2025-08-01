@@ -13,7 +13,6 @@ const Templates: React.FC = () => {
   const [templateToDelete, setTemplateToDelete] = useState<Template | null>(null);
   const navigate = useNavigate();
 
-  // Initialize templates on component mount
   useEffect(() => {
     initializeTemplates();
   }, [initializeTemplates]);
@@ -37,7 +36,6 @@ const Templates: React.FC = () => {
   };
 
   const handlePreview = (template: Template) => {
-    // Otwórz modal podglądu
     console.log('Preview template:', template);
   };
 

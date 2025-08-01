@@ -21,9 +21,10 @@ function App() {
     applyTheme();
   }, [applyTheme]);
 
-  if (!isAuthenticated) {
-    return <Auth />;
-  }
+  // Tymczasowo wyłączone uwierzytelnienie do testów drag & drop
+  // if (!isAuthenticated) {
+  //   return <Auth />;
+  // }
 
   return (
     <Router>
