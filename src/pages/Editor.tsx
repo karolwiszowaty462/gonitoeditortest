@@ -1921,7 +1921,12 @@ ${htmlContent}
             {/* View Tabs */}
             <div className="flex bg-slate-700 rounded p-0.5 mr-2">
               <button
-                onClick={() => setActiveTab('preview')}
+                onClick={() => {
+                  setActiveTab('preview');
+                  if (activePanel === 'code') {
+                    setActivePanel('blocks');
+                  }
+                }}
                 className={`px-2 py-1 rounded text-xs ${activeTab === 'preview' ? 'bg-blue-600 text-white' : 'text-slate-300'}`}
               >
                 <Eye className="w-3 h-3 inline mr-1" />

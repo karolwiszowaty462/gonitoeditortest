@@ -1,5 +1,25 @@
 # Gonito Editor - Historia Zmian
 
+## Beta 0.4 (03.08.2025)
+
+### 🔧 Naprawione błędy
+- **Naprawiono przełączanie widoków w edytorze**: Poprawiono logikę przełączania między widokiem kodu a podglądem
+  - Rozwiązano problem, gdzie panel kodu nie znikał po kliknięciu przycisku "Podgląd"
+  - Zaktualizowano obsługę stanu `activePanel` przy przełączaniu między widokami
+  - Dodano automatyczne przełączanie do panelu bloków przy powrocie do podglądu
+
+- **Naprawiono błędy składniowe w szablonach**: Poprawiono strukturę HTML w szablonach
+  - Usunięto nieprawidłowe zagnieżdżenia tagów HTML
+  - Poprawiono wcięcia i formatowanie kodu HTML
+  - Naprawiono błędy składniowe w szablonie eBay Modern Professional
+
+### 📋 Stan aplikacji
+- ✅ Poprawne działanie przełączania między widokiem kodu a podglądem
+- ✅ Poprawna struktura HTML w szablonach
+- ✅ Aplikacja uruchamia się bez błędów składniowych
+
+---
+
 ## Beta 0.3 (02.08.2025)
 
 ### 🔧 Naprawione błędy

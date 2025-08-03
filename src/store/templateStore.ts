@@ -31,48 +31,361 @@ interface TemplateState {
 
 const defaultTemplates: Template[] = [
   {
-    id: 'template-1',
-    name: 'Klasyczny eBay',
-    description: 'Prosty i elegancki szablon dla wszystkich kategorii produktów',
-    category: 'inne',
-    thumbnail: 'https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400',
-    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]'],
+    id: 'ebay-template-1',
+    name: 'eBay Modern Professional',
+    description: 'Nowoczesny, profesjonalny szablon dla sprzedawców eBay',
+    category: 'elektronika',
+    thumbnail: 'https://images.pexels.com/photos/1779487/pexels-photo-1779487.jpeg?auto=compress&cs=tinysrgb&w=400',
+    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]', '[stan]', '[gwarancja]'],
     htmlContent: `
       <!-- Główny kontener szablonu -->
-      <div class="ebay-template classic-template">
-        <!-- Nagłówek - pojedynczy blok -->
+      <div class="ebay-template modern-professional" data-block="container">
+        <!-- Nagłówek -->
         <header class="ebay-header header-section" data-block="header">
-          <h1 class="ebay-title">[nazwa]</h1>
-          <div class="ebay-price">Cena: [cena] PLN</div>
+          <h1 class="ebay-title" data-editable="true">[nazwa]</h1>
+          <div class="ebay-price-container" data-editable="true">
+            <span class="ebay-price">[cena]</span>
+            <span class="ebay-currency">PLN</span>
+          </div>
         </header>
         
-        <!-- Sekcja zdjęcia - pojedynczy blok -->
-        <section class="ebay-gallery image-section" data-block="gallery">
-          <img src="[obrazek]" alt="[nazwa]" class="main-image" />
+        <!-- Sekcja główna z obrazkiem i opisem -->
+        <div class="main-content" data-block="main-content">
+          <!-- Galeria zdjęć -->
+          <div class="ebay-gallery" data-block="gallery" data-editable="true">
+            <img src="[obrazek]" alt="[nazwa]" class="ebay-main-image" data-editable="true" />
+          </div>
+          
+          <!-- Informacje o produkcie -->
+          <div class="product-info" data-block="product-info">
+            <div class="ebay-description" data-editable="true">
+              <h3>Opis produktu</h3>
+              <div class="description-content">[opis]</div>
+            </div>
+            
+            <!-- Specyfikacja produktu -->
+            <div class="product-specs" data-block="product-specs" data-editable="true">
+              <h3>Specyfikacja</h3>
+              <table class="spec-table" data-editable="true">
+                <tr>
+                  <td>Producent:</td>
+                  <td>[producent]</td>
+                </tr>
+                <tr>
+                  <td>Kategoria:</td>
+                  <td>[kategoria]</td>
+                </tr>
+                <tr>
+                  <td>Stan:</td>
+                  <td>[stan]</td>
+                </tr>
+                <tr>
+                  <td>Gwarancja:</td>
+                  <td>[gwarancja]</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Sekcja dostawy i płatności -->
+        <section class="shipping-payment" data-block="shipping-payment">
+          <div class="ebay-shipping" data-editable="true">
+            <h4>Dostawa</h4>
+            <p>Wysyłka w ciągu 24h od zaksięgowania płatności.</p>
+          </div>
+          
+          <div class="ebay-payment" data-editable="true">
+            <h4>Płatności</h4>
+            <p>Akceptujemy płatności kartą, przelewem oraz PayPal.</p>
+          </div>
         </section>
         
-        <!-- Sekcja opisu - pojedynczy blok -->
-        <section class="ebay-description description-section" data-block="description">
-          <h2>Opis produktu</h2>
-          <div class="description-content">[opis]</div>
-        </section>
-        
-        <!-- Sekcja cech produktu - pojedynczy blok -->
-        <section class="ebay-features features" data-block="features">
-          <h3>Cechy produktu:</h3>
-          <ul class="features-list">
-            <li>Wysoka jakość</li>
-            <li>Szybka wysyłka</li>
-            <li>Gwarancja</li>
-          </ul>
-        </section>
-        
-        <!-- Stopka - pojedynczy blok -->
-        <footer class="ebay-footer footer-section" data-block="footer">
-          <div class="producer">Producent: [producent]</div>
-          <div class="category">Kategoria: [kategoria]</div>
+        <!-- Stopka -->
+        <footer class="ebay-footer" data-block="footer" data-editable="true">
+          <p>Dziękujemy za zainteresowanie naszym produktem!</p>
+          <p>W razie pytań prosimy o kontakt.</p>
         </footer>
       </div>
+    `,
+    cssContent: `
+      /* Resetowanie stylów */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      
+      /* Główny kontener */
+      .ebay-template.modern-professional {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        color: #333;
+        background-color: #fff;
+      }
+      
+      /* Nagłówek */
+      .ebay-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        background: linear-gradient(135deg, #3498db, #2980b9);
+        color: white;
+        border-radius: 8px;
+        margin-bottom: 20px;
+      }
+      
+      .ebay-title {
+        font-size: 24px;
+        font-weight: 600;
+        margin: 0;
+      }
+      
+      .ebay-price-container {
+        background-color: rgba(255, 255, 255, 0.2);
+        padding: 10px 15px;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+      
+      .ebay-price {
+        font-size: 22px;
+      }
+      
+      .ebay-currency {
+        font-size: 18px;
+        margin-left: 5px;
+      }
+      
+      /* Sekcja główna */
+      .main-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      
+      /* Galeria */
+      .ebay-gallery {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        text-align: center;
+      }
+      
+      .ebay-main-image {
+        max-width: 100%;
+        height: auto;
+        border-radius: 4px;
+      }
+      
+      /* Informacje o produkcie */
+      .product-info {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+      }
+      
+      .ebay-description {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      
+      .ebay-description h3 {
+        color: #2980b9;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+      
+      .description-content {
+        line-height: 1.6;
+      }
+      
+      /* Specyfikacja */
+      .product-specs {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      
+      .product-specs h3 {
+        color: #2980b9;
+        margin-bottom: 10px;
+        font-size: 18px;
+      }
+      
+      .spec-table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      
+      .spec-table tr {
+        border-bottom: 1px solid #ddd;
+      }
+      
+      .spec-table tr:last-child {
+        border-bottom: none;
+      }
+      
+      .spec-table td {
+        padding: 8px 0;
+      }
+      
+      .spec-table td:first-child {
+        font-weight: 600;
+        width: 40%;
+      }
+      
+      /* Sekcja dostawy i płatności */
+      .shipping-payment {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-bottom: 20px;
+      }
+      
+      .ebay-shipping, .ebay-payment {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+      }
+      
+      .ebay-shipping h4, .ebay-payment h4 {
+        color: #2980b9;
+        margin-bottom: 10px;
+        font-size: 16px;
+      }
+      
+      /* Stopka */
+      .ebay-footer {
+        text-align: center;
+        padding: 20px;
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        font-size: 14px;
+        color: #666;
+      }
+      
+      /* Responsywność */
+      @media (max-width: 768px) {
+        .main-content, .shipping-payment {
+          grid-template-columns: 1fr;
+        }
+        
+        .ebay-header {
+          flex-direction: column;
+          text-align: center;
+          gap: 10px;
+        }
+      }
+    `,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  },
+  {
+    id: 'baselinker-template-1',
+    name: 'Baselinker Standard',
+    description: 'Standardowy szablon Baselinker z wszystkimi popularnymi tagami',
+    category: 'inne',
+    thumbnail: 'https://images.pexels.com/photos/5632402/pexels-photo-5632402.jpeg?auto=compress&cs=tinysrgb&w=400',
+    baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]', '[stan]', '[gwarancja]', '[opis_dodatkowy1]', '[opis_dodatkowy2]'],
+    htmlContent: `
+      <!-- Główny kontener szablonu -->
+      <div class="baselinker-template standard" data-block="container">
+        <!-- Nagłówek -->
+        <header class="bl-header header-section" data-block="header">
+          <h1 class="bl-product-name" data-editable="true">[nazwa]</h1>
+          <div class="bl-price-section" data-editable="true">
+            <span class="bl-price">[cena] zł</span>
+          </div>
+        </header>
+        
+        <!-- Sekcja główna -->
+        <div class="main-content" data-block="main-content">
+          <!-- Galeria zdjęć -->
+          <div class="bl-images" data-block="gallery" data-editable="true">
+            <img src="[obrazek]" alt="[nazwa]" class="bl-main-image" data-editable="true" />
+          </div>
+          
+          <!-- Informacje o produkcie -->
+          <div class="product-details" data-block="product-details">
+            <!-- Podstawowe informacje -->
+            <div class="bl-basic-info" data-editable="true">
+              <div class="bl-producer">
+                <span class="bl-producer-label">Producent:</span> 
+                <span class="bl-producer-name">[producent]</span>
+              </div>
+              <div class="bl-category">
+                <span class="bl-category-label">Kategoria:</span> 
+                <span class="bl-category-name">[kategoria]</span>
+              </div>
+              <div class="bl-condition">
+                <span class="bl-condition-label">Stan:</span> 
+                <span class="bl-condition-value">[stan]</span>
+              </div>
+              <div class="bl-warranty">
+                <span class="bl-warranty-label">Gwarancja:</span> 
+                <span class="bl-warranty-value">[gwarancja]</span>
+              </div>
+            </div>
+            
+            <!-- Opis produktu -->
+            <div class="bl-description" data-editable="true">
+              <h3>Opis produktu</h3>
+              <div class="bl-desc-content">[opis]</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Dodatkowe opisy -->
+        <div class="additional-content" data-block="additional-content">
+          <div class="bl-additional-desc1" data-editable="true">
+            <h4>Dodatkowe informacje</h4>
+            <div class="bl-desc-content">[opis_dodatkowy1]</div>
+          </div>
+          
+          <div class="bl-additional-desc2" data-editable="true">
+            <h4>Specyfikacja</h4>
+            <div class="bl-desc-content">[opis_dodatkowy2]</div>
+          </div>
+        </div>
+        
+        <!-- Stopka -->
+        <footer class="bl-footer" data-block="footer" data-editable="true">
+          <p>Dziękujemy za zainteresowanie naszym produktem!</p>
+        </footer>
+      </div>
+      
+      <!-- Sekcja z obrazkiem -->  
+      <section class="image-section" data-block="image-section">
+        <img src="[obrazek]" alt="[nazwa]" class="main-image" />
+      </section>
+      
+      <!-- Sekcja opisu - pojedynczy blok -->
+      <section class="ebay-description description-section" data-block="description">
+        <h2>Opis produktu</h2>
+        <div class="description-content">[opis]</div>
+      </section>
+      
+      <!-- Sekcja cech produktu - pojedynczy blok -->
+      <section class="ebay-features features" data-block="features">
+        <h3>Cechy produktu:</h3>
+        <ul class="features-list">
+          <li>Wysoka jakość</li>
+          <li>Szybka wysyłka</li>
+          <li>Gwarancja</li>
+        </ul>
+      </section>
+      
+      <!-- Stopka - pojedynczy blok -->
+      <footer class="ebay-footer footer-section" data-block="footer">
+        <div class="producer">Producent: [producent]</div>
+        <div class="category">Kategoria: [kategoria]</div>
+      </footer>
     `,
     cssContent: `
       /* Główne style szablonu */
