@@ -1,7 +1,7 @@
 {
-  "version": "0.2.0",
-  "codename": "Beta 0.2",
-  "releaseDate": "2025-07-31",
+  "version": "0.3.0",
+  "codename": "Beta 0.3",
+  "releaseDate": "2025-08-02",
   "status": "beta",
   "features": {
     "templates": 8,

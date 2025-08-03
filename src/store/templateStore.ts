@@ -38,101 +38,133 @@ const defaultTemplates: Template[] = [
     thumbnail: 'https://images.pexels.com/photos/267350/pexels-photo-267350.jpeg?auto=compress&cs=tinysrgb&w=400',
     baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]'],
     htmlContent: `
+      <!-- Główny kontener szablonu -->
       <div class="ebay-template classic-template">
-        <div class="header" data-editable="true">
-          <h1 class="title" data-editable="true">[nazwa]</h1>
-          <div class="price" data-editable="true">Cena: [cena] PLN</div>
-        </div>
+        <!-- Nagłówek - pojedynczy blok -->
+        <header class="ebay-header header-section" data-block="header">
+          <h1 class="ebay-title">[nazwa]</h1>
+          <div class="ebay-price">Cena: [cena] PLN</div>
+        </header>
         
-        <div class="main-content">
-          <div class="image-section" data-editable="true">
-            <img src="[obrazek]" alt="[nazwa]" class="main-image" data-editable="true" />
-          </div>
-          
-          <div class="description-section" data-editable="true">
-            <h2 data-editable="true">Opis produktu</h2>
-            <div class="description" data-editable="true">[opis]</div>
-            
-            <div class="features" data-editable="true">
-              <h3 data-editable="true">Cechy produktu:</h3>
-              <div data-editable="true">• Wysoka jakość<br>• Szybka wysyłka<br>• Gwarancja</div>
-            </div>
-          </div>
-        </div>
+        <!-- Sekcja zdjęcia - pojedynczy blok -->
+        <section class="ebay-gallery image-section" data-block="gallery">
+          <img src="[obrazek]" alt="[nazwa]" class="main-image" />
+        </section>
         
-        <div class="footer" data-editable="true">
-          <p data-editable="true">Producent: [producent]</p>
-          <p data-editable="true">Kategoria: [kategoria]</p>
-        </div>
+        <!-- Sekcja opisu - pojedynczy blok -->
+        <section class="ebay-description description-section" data-block="description">
+          <h2>Opis produktu</h2>
+          <div class="description-content">[opis]</div>
+        </section>
+        
+        <!-- Sekcja cech produktu - pojedynczy blok -->
+        <section class="ebay-features features" data-block="features">
+          <h3>Cechy produktu:</h3>
+          <ul class="features-list">
+            <li>Wysoka jakość</li>
+            <li>Szybka wysyłka</li>
+            <li>Gwarancja</li>
+          </ul>
+        </section>
+        
+        <!-- Stopka - pojedynczy blok -->
+        <footer class="ebay-footer footer-section" data-block="footer">
+          <div class="producer">Producent: [producent]</div>
+          <div class="category">Kategoria: [kategoria]</div>
+        </footer>
       </div>
     `,
     cssContent: `
+      /* Główne style szablonu */
       .ebay-template {
         font-family: Arial, sans-serif;
         max-width: 800px;
         margin: 0 auto;
         padding: 20px;
         background: #fff;
+        color: #333;
       }
       
-      .header {
+      /* Style nagłówka */
+      .ebay-header {
         text-align: center;
         margin-bottom: 30px;
         border-bottom: 2px solid #e74c3c;
         padding-bottom: 20px;
       }
       
-      .title {
+      .ebay-title {
         color: #2c3e50;
         font-size: 28px;
         margin-bottom: 10px;
       }
       
-      .price {
+      .ebay-price {
         font-size: 24px;
         color: #e74c3c;
         font-weight: bold;
       }
       
-      .main-content {
-        display: flex;
-        gap: 30px;
+      /* Style galerii */
+      .ebay-gallery {
         margin-bottom: 30px;
-      }
-      
-      .image-section {
-        flex: 1;
+        text-align: center;
       }
       
       .main-image {
         width: 100%;
+        max-width: 500px;
         height: auto;
         border-radius: 8px;
         box-shadow: 0 4px 8px rgba(0,0,0,0.1);
       }
       
-      .description-section {
-        flex: 1;
+      /* Style opisu */
+      .ebay-description {
+        margin-bottom: 30px;
       }
       
-      .description-section h2 {
+      .ebay-description h2 {
         color: #2c3e50;
         border-bottom: 1px solid #bdc3c7;
         padding-bottom: 10px;
       }
       
-      .features {
+      /* Style cech produktu */
+      .ebay-features {
         margin-top: 20px;
         padding: 15px;
         background: #f8f9fa;
         border-radius: 5px;
+        margin-bottom: 30px;
       }
       
-      .footer {
+      .features-list {
+        margin-left: 20px;
+        line-height: 1.6;
+      }
+      
+      /* Style stopki */
+      .ebay-footer {
         text-align: center;
         padding-top: 20px;
         border-top: 1px solid #bdc3c7;
         color: #7f8c8d;
+      }
+      
+      /* Responsywność dla urządzeń mobilnych */
+      @media (max-width: 768px) {
+        .ebay-template {
+          padding: 15px;
+        }
+        
+        .ebay-title {
+          font-size: 24px;
+        }
+        
+        .ebay-price {
+          font-size: 20px;
+        }
       }
     `,
     createdAt: '2024-01-01T00:00:00Z',
@@ -146,42 +178,55 @@ const defaultTemplates: Template[] = [
     thumbnail: 'https://images.pexels.com/photos/356056/pexels-photo-356056.jpeg?auto=compress&cs=tinysrgb&w=400',
     baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]'],
     htmlContent: `
+      <!-- Główny kontener szablonu -->
       <div class="ebay-template modern-template">
-        <div class="gradient-header" data-editable="true">
-          <h1 class="modern-title" data-editable="true">[nazwa]</h1>
-          <div class="price-badge" data-editable="true">[cena] PLN</div>
-        </div>
+        <!-- Nagłówek - pojedynczy blok -->
+        <header class="ebay-header gradient-header" data-block="header">
+          <h1 class="ebay-title modern-title">[nazwa]</h1>
+          <div class="ebay-price price-badge">[cena] PLN</div>
+        </header>
         
+        <!-- Sekcja zawartości - pojedynczy blok -->
         <div class="content-grid">
-          <div class="image-container" data-editable="true">
-            <img src="[obrazek]" alt="[nazwa]" class="product-image" data-editable="true" />
-            <div class="image-overlay" data-editable="true">
-              <span data-editable="true">Najwyższa jakość</span>
+          <!-- Sekcja zdjęcia - pojedynczy blok -->
+          <section class="ebay-gallery image-container" data-block="gallery">
+            <img src="[obrazek]" alt="[nazwa]" class="product-image" />
+            <div class="image-overlay">
+              <span>Najwyższa jakość</span>
             </div>
-          </div>
+          </section>
           
-          <div class="info-panel" data-editable="true">
-            <div class="producer-section" data-editable="true">
-              <h3 data-editable="true">Producent</h3>
-              <p data-editable="true">[producent]</p>
+          <!-- Sekcja informacji - pojedynczy blok -->
+          <section class="ebay-info info-panel" data-block="info">
+            <!-- Sekcja producenta - pojedynczy blok -->
+            <div class="producer-section" data-block="producer">
+              <h3>Producent</h3>
+              <p>[producent]</p>
             </div>
             
-            <div class="description-panel" data-editable="true">
-              <h3 data-editable="true">Opis</h3>
-              <div data-editable="true">[opis]</div>
+            <!-- Sekcja opisu - pojedynczy blok -->
+            <div class="ebay-description description-panel" data-block="description">
+              <h3>Opis</h3>
+              <div>[opis]</div>
             </div>
             
-            <div class="features-grid" data-editable="true">
-              <h3 data-editable="true">Specyfikacja</h3>
-              <div data-editable="true">• Nowoczesny design<br>• Wysokiej jakości materiały<br>• Gwarancja producenta</div>
+            <!-- Sekcja cech - pojedynczy blok -->
+            <div class="ebay-features features-grid" data-block="features">
+              <h3>Specyfikacja</h3>
+              <ul class="features-list">
+                <li>Nowoczesny design</li>
+                <li>Wysokiej jakości materiały</li>
+                <li>Gwarancja producenta</li>
+              </ul>
             </div>
-          </div>
+          </section>
         </div>
         
-        <div class="cta-section" data-editable="true">
-          <h2 data-editable="true">Zamów już dziś!</h2>
-          <p data-editable="true">Szybka wysyłka • Gwarancja jakości • Bezpieczne płatności</p>
-        </div>
+        <!-- Sekcja CTA - pojedynczy blok -->
+        <footer class="ebay-footer cta-section" data-block="footer">
+          <h2>Zamów już dziś!</h2>
+          <p>Szybka wysyłka • Gwarancja jakości • Bezpieczne płatności</p>
+        </footer>
       </div>
     `,
     cssContent: `
@@ -295,37 +340,50 @@ const defaultTemplates: Template[] = [
     thumbnail: 'https://images.pexels.com/photos/996329/pexels-photo-996329.jpeg?auto=compress&cs=tinysrgb&w=400',
     baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[kategoria]'],
     htmlContent: `
+      <!-- Główny kontener szablonu -->
       <div class="ebay-template minimal-template">
-        <header class="minimal-header" data-editable="true">
-          <h1 class="clean-title" data-editable="true">[nazwa]</h1>
-          <div class="category-tag" data-editable="true">[kategoria]</div>
+        <!-- Nagłówek - pojedynczy blok -->
+        <header class="ebay-header minimal-header" data-block="header">
+          <h1 class="ebay-title clean-title">[nazwa]</h1>
+          <div class="category-tag">[kategoria]</div>
         </header>
         
+        <!-- Główna zawartość -->
         <main class="minimal-main">
-          <section class="image-section" data-editable="true">
-            <img src="[obrazek]" alt="[nazwa]" class="clean-image" data-editable="true" />
+          <!-- Sekcja zdjęcia - pojedynczy blok -->
+          <section class="ebay-gallery image-section" data-block="gallery">
+            <img src="[obrazek]" alt="[nazwa]" class="clean-image" />
           </section>
           
-          <section class="content-section" data-editable="true">
-            <div class="price-section" data-editable="true">
-              <span class="price-label" data-editable="true">Cena:</span>
-              <span class="price-value" data-editable="true">[cena] PLN</span>
+          <!-- Sekcja treści - pojedynczy blok -->
+          <section class="content-section" data-block="content">
+            <!-- Sekcja ceny - pojedynczy blok -->
+            <div class="ebay-price price-section" data-block="price">
+              <span class="price-label">Cena:</span>
+              <span class="price-value">[cena] PLN</span>
             </div>
             
-            <div class="description-section" data-editable="true">
-              <h2 data-editable="true">O produkcie</h2>
-              <div class="description-text" data-editable="true">[opis]</div>
+            <!-- Sekcja opisu - pojedynczy blok -->
+            <div class="ebay-description description-section" data-block="description">
+              <h2>O produkcie</h2>
+              <div class="description-text">[opis]</div>
             </div>
             
-            <div class="specs-section" data-editable="true">
-              <h2 data-editable="true">Specyfikacja</h2>
-              <div class="specs-list" data-editable="true">• Minimalistyczny design<br>• Łatwe w użyciu<br>• Wysokiej jakości wykonanie</div>
+            <!-- Sekcja specyfikacji - pojedynczy blok -->
+            <div class="ebay-features specs-section" data-block="specs">
+              <h2>Specyfikacja</h2>
+              <ul class="specs-list">
+                <li>Minimalistyczny design</li>
+                <li>Łatwe w użyciu</li>
+                <li>Wysokiej jakości wykonanie</li>
+              </ul>
             </div>
           </section>
         </main>
         
-        <footer class="minimal-footer" data-editable="true">
-          <p data-editable="true">Dziękujemy za zainteresowanie naszym produktem</p>
+        <!-- Stopka - pojedynczy blok -->
+        <footer class="ebay-footer minimal-footer" data-block="footer">
+          <p>Dziękujemy za zainteresowanie naszym produktem</p>
         </footer>
       </div>
     `,
@@ -1672,26 +1730,32 @@ const defaultTemplates: Template[] = [
     thumbnail: 'https://images.pexels.com/photos/590016/pexels-photo-590016.jpeg?auto=compress&cs=tinysrgb&w=400',
     baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]'],
     htmlContent: `
+      <!-- Główny kontener szablonu -->
       <div class="ebay-template starter-template">
-        <div class="starter-header" data-editable="true">
-          <h1 data-editable="true">[nazwa]</h1>
-          <div class="price" data-editable="true">[cena] PLN</div>
-        </div>
+        <!-- Nagłówek - pojedynczy blok -->
+        <header class="ebay-header starter-header" data-block="header">
+          <h1 class="ebay-title">[nazwa]</h1>
+          <div class="ebay-price">[cena] PLN</div>
+        </header>
         
-        <div class="starter-content">
-          <div class="image-wrapper" data-editable="true">
-            <img src="[obrazek]" alt="[nazwa]" data-editable="true" />
-          </div>
+        <!-- Główna zawartość -->
+        <main class="starter-content">
+          <!-- Sekcja zdjęcia - pojedynczy blok -->
+          <section class="ebay-gallery image-wrapper" data-block="gallery">
+            <img src="[obrazek]" alt="[nazwa]" />
+          </section>
           
-          <div class="description" data-editable="true">
-            <h2 data-editable="true">Opis</h2>
-            <p data-editable="true">[opis]</p>
-          </div>
-        </div>
+          <!-- Sekcja opisu - pojedynczy blok -->
+          <section class="ebay-description description" data-block="description">
+            <h2>Opis</h2>
+            <p>[opis]</p>
+          </section>
+        </main>
         
-        <div class="starter-footer" data-editable="true">
-          <p data-editable="true">Skontaktuj się z nami w razie pytań!</p>
-        </div>
+        <!-- Stopka - pojedynczy blok -->
+        <footer class="ebay-footer starter-footer" data-block="footer">
+          <p>Skontaktuj się z nami w razie pytań!</p>
+        </footer>
       </div>
     `,
     cssContent: `
@@ -1767,44 +1831,53 @@ const defaultTemplates: Template[] = [
     thumbnail: 'https://images.pexels.com/photos/3184291/pexels-photo-3184291.jpeg?auto=compress&cs=tinysrgb&w=400',
     baselinkerTags: ['[nazwa]', '[cena]', '[opis]', '[obrazek]', '[producent]', '[kategoria]', '[stan]', '[gwarancja]'],
     htmlContent: `
+      <!-- Główny kontener szablonu -->
       <div class="ebay-template universal-template">
-        <div class="universal-header" data-editable="true">
-          <h1 data-editable="true">[nazwa]</h1>
-          <div class="meta-info" data-editable="true">
-            <span class="category" data-editable="true">Kategoria: [kategoria]</span>
-            <span class="producer" data-editable="true">Producent: [producent]</span>
+        <!-- Nagłówek - pojedynczy blok -->
+        <header class="ebay-header universal-header" data-block="header">
+          <h1 class="ebay-title">[nazwa]</h1>
+          <div class="meta-info">
+            <span class="category">Kategoria: [kategoria]</span>
+            <span class="producer">Producent: [producent]</span>
           </div>
-        </div>
+        </header>
         
-        <div class="universal-main">
-          <div class="product-image" data-editable="true">
-            <img src="[obrazek]" alt="[nazwa]" data-editable="true" />
-          </div>
+        <!-- Główna zawartość -->
+        <main class="universal-main">
+          <!-- Sekcja zdjęcia - pojedynczy blok -->
+          <section class="ebay-gallery product-image" data-block="gallery">
+            <img src="[obrazek]" alt="[nazwa]" />
+          </section>
           
-          <div class="product-details" data-editable="true">
-            <div class="price-section" data-editable="true">
-              <div class="price" data-editable="true">[cena] PLN</div>
-              <div class="condition" data-editable="true">Stan: [stan]</div>
-            </div>
+          <!-- Sekcja szczegółów produktu -->
+          <div class="product-details">
+            <!-- Sekcja ceny - pojedynczy blok -->
+            <section class="ebay-price price-section" data-block="price">
+              <div class="price">[cena] PLN</div>
+              <div class="condition">Stan: [stan]</div>
+            </section>
             
-            <div class="description-section" data-editable="true">
-              <h2 data-editable="true">Opis produktu</h2>
-              <div data-editable="true">[opis]</div>
-            </div>
+            <!-- Sekcja opisu - pojedynczy blok -->
+            <section class="ebay-description description-section" data-block="description">
+              <h2>Opis produktu</h2>
+              <div>[opis]</div>
+            </section>
             
-            <div class="warranty-section" data-editable="true">
-              <h3 data-editable="true">Gwarancja</h3>
-              <p data-editable="true">[gwarancja]</p>
-            </div>
+            <!-- Sekcja gwarancji - pojedynczy blok -->
+            <section class="ebay-warranty warranty-section" data-block="warranty">
+              <h3>Gwarancja</h3>
+              <p>[gwarancja]</p>
+            </section>
           </div>
-        </div>
+        </main>
         
-        <div class="universal-footer" data-editable="true">
-          <div class="contact-info" data-editable="true">
-            <h3 data-editable="true">Informacje o sprzedawcy</h3>
-            <p data-editable="true">Profesjonalna obsługa • Szybka wysyłka • Gwarancja satysfakcji</p>
+        <!-- Stopka - pojedynczy blok -->
+        <footer class="ebay-footer universal-footer" data-block="footer">
+          <div class="contact-info">
+            <h3>Informacje o sprzedawcy</h3>
+            <p>Profesjonalna obsługa • Szybka wysyłka • Gwarancja satysfakcji</p>
           </div>
-        </div>
+        </footer>
       </div>
     `,
     cssContent: `
@@ -1931,8 +2004,8 @@ const defaultTemplates: Template[] = [
         }
       }
     `,
-    createdAt: '2024-01-08T00:00:00Z',
-    updatedAt: '2024-01-08T00:00:00Z'
+    createdAt: '2024-08-02T16:00:00Z',
+    updatedAt: '2024-08-02T16:00:00Z'
   }
 ];
 

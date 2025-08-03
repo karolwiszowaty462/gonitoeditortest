@@ -1390,25 +1390,64 @@ const Editor: React.FC = () => {
     </div>
   );
 
-  const renderCodePanel = () => (
-    <div className="w-1/2 bg-slate-800 border-r border-slate-700 flex flex-col">
-      <div className="p-4 border-b border-slate-700">
-        <div className="flex gap-2">
-          <button className="px-3 py-1 bg-blue-600 text-white rounded text-sm">HTML</button>
-          <button className="px-3 py-1 bg-slate-700 text-slate-300 rounded text-sm">CSS</button>
+  const renderCodePanel = () => {
+    // Prepare the complete eBay template code (HTML with embedded CSS)
+    const completeEbayCode = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+${cssContent}
+</style>
+</head>
+<body>
+${htmlContent}
+</body>
+</html>`;
+
+    // Function to parse the complete code back into HTML and CSS
+    const handleCompleteCodeChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const newCompleteCode = e.target.value;
+      
+      try {
+        // Extract CSS content
+        const cssMatch = newCompleteCode.match(/<style>([\s\S]*?)<\/style>/i);
+        const newCssContent = cssMatch ? cssMatch[1].trim() : '';
+        
+        // Extract HTML content
+        const htmlMatch = newCompleteCode.match(/<body>([\s\S]*?)<\/body>/i);
+        const newHtmlContent = htmlMatch ? htmlMatch[1].trim() : '';
+        
+        // Update the state variables
+        setCssContent(newCssContent);
+        setHtmlContent(newHtmlContent);
+      } catch (error) {
+        console.error('Error parsing complete code:', error);
+      }
+    };
+
+    return (
+      <div className="w-1/2 bg-slate-800 border-r border-slate-700 flex flex-col">
+        <div className="p-4 border-b border-slate-700">
+          <h3 className="text-white font-semibold">Kod szablonu eBay</h3>
+        </div>
+        
+        <div className="flex-1 p-4 flex flex-col gap-4 overflow-auto">
+          {/* Complete editable eBay template code */}
+          <div>
+            <label className="block text-white font-medium mb-2">Kompletny kod szablonu eBay</label>
+            <textarea
+              value={completeEbayCode}
+              onChange={handleCompleteCodeChange}
+              className="w-full h-[calc(100vh-250px)] bg-slate-900 text-white font-mono text-sm border border-slate-600 rounded p-3 resize-none focus:outline-none focus:border-blue-500"
+              spellCheck="false"
+            />
+          </div>
         </div>
       </div>
-      
-      <div className="flex-1 p-4">
-        <textarea
-          value={htmlContent}
-          onChange={(e) => setHtmlContent(e.target.value)}
-          className="w-full h-full bg-slate-900 text-white font-mono text-sm border border-slate-600 rounded p-3 resize-none focus:outline-none focus:border-blue-500"
-          placeholder="Wprowadź kod HTML..."
-        />
-      </div>
-    </div>
-  );
+    );
+  };
 
   const renderPropertiesPanel = () => (
     <div className="w-80 bg-slate-800 border-l border-slate-700 overflow-y-auto">
@@ -1889,7 +1928,10 @@ const Editor: React.FC = () => {
                 <span className="hidden sm:inline">Podgląd</span>
               </button>
               <button
-                onClick={() => setActiveTab('code')}
+                onClick={() => {
+                  setActiveTab('code');
+                  setActivePanel('code');
+                }}
                 className={`px-2 py-1 rounded text-xs ${activeTab === 'code' ? 'bg-blue-600 text-white' : 'text-slate-300'}`}
               >
                 <Code className="w-3 h-3 inline mr-1" />
@@ -1934,14 +1976,6 @@ const Editor: React.FC = () => {
             >
               <ArrowUp className="w-3 h-3 inline mr-1" />
               <span className="hidden lg:inline">Kolejność</span>
-            </button>
-
-            <button
-              onClick={() => setActivePanel(activePanel === 'code' ? null : 'code')}
-              className={`px-2 py-1 rounded text-xs ${activePanel === 'code' ? 'bg-blue-600 text-white' : 'bg-slate-700 text-slate-300'}`}
-            >
-              <Code className="w-3 h-3 inline mr-1" />
-              <span className="hidden lg:inline">Kod</span>
             </button>
 
             {/* Action Buttons */}

@@ -1,5 +1,26 @@
 # Gonito Editor - Historia Zmian
 
+## Beta 0.3 (02.08.2025)
+
+### 🔧 Naprawione błędy
+- **Ulepszono strukturę bloków w szablonach**: Dodano jawne atrybuty `data-block` do wszystkich szablonów
+  - Podstawowy Starter (template-7): Zrestrukturyzowano z użyciem semantycznych elementów HTML5
+  - Uniwersalny Baselinker (template-8): Dodano jawne atrybuty `data-block` dla niezawodnego parsowania
+  - Usunięto problematyczne atrybuty `data-editable` powodujące duplikację bloków
+
+### 🎯 Ulepszenia
+- **Poprawiona struktura szablonów**: Wszystkie szablony używają teraz spójnej struktury bloków
+  - Dodano semantyczne elementy HTML5 (`<header>`, `<main>`, `<section>`, `<footer>`)
+  - Zastosowano spójne nazewnictwo klas (`ebay-header`, `ebay-gallery`, `ebay-description`)
+  - Dodano komentarze HTML dla lepszej czytelności kodu
+
+### 📋 Stan aplikacji
+- ✅ 8 w pełni zoptymalizowanych szablonów eBay
+- ✅ Niezawodne parsowanie bloków dzięki jawnym atrybutom `data-block`
+- ✅ Poprawne działanie przenoszenia bloków bez duplikacji
+
+---
+
 ## Beta 0.2 (31.07.2025)
 
 ### 🔧 Naprawione błędy
